@@ -32,7 +32,42 @@ jobs:
           exit 1
         fi
 
+    - name: Check if server is already set up
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔍 Checking if server is already set up..."
+          
+          # Check if Node.js, PM2, and Caddy are installed
+          if command -v node &> /dev/null && command -v npm &> /dev/null && command -v caddy &> /dev/null; then
+            echo "✅ Server is already set up!"
+            echo "Node.js: $(node --version)"
+            echo "npm: $(npm --version)"
+            echo "Caddy: $(caddy version)"
+            
+            # Check if directories exist
+            if [ -d "/opt/ai-backend" ] && [ -d "/var/log/ai-backend" ]; then
+              echo "✅ Required directories already exist"
+              echo "✅ Server setup complete - skipping installation"
+              exit 0
+            else
+              echo "⚠️ Software installed but directories missing - creating them"
+              sudo mkdir -p /opt/ai-backend /var/log/ai-backend
+              sudo chown -R $USER:$USER /opt/ai-backend /var/log/ai-backend
+              echo "✅ Directories created - server setup complete"
+              exit 0
+            fi
+          else
+            echo "❌ Server not set up - proceeding with installation"
+            exit 1
+          fi
+
     - name: Upload and run Caddy installation script
+      if: failure()
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -43,6 +78,7 @@ jobs:
         target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
 
     - name: Run server setup script
+      if: failure()
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
