@@ -543,6 +543,83 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
 /**
  * @swagger
  * /chat/{sessionId}/message/{messageId}/prompt:
+ *   patch:
+ *     summary: Update prompt and regenerate AI response (PATCH - Semantically Correct)
+ *     description: Updates the user's prompt for a specific message and generates a new AI response based on the updated question. PATCH is the semantically correct method for partial resource updates.
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the chat session
+ *         example: "68fdec6c8926e0f530e312b5"
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the message to update
+ *         example: "8f14375a-1601-48d9-b950-e2ac1da2d80a"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPrompt
+ *             properties:
+ *               newPrompt:
+ *                 type: string
+ *                 description: The updated question or prompt
+ *                 example: "What are the most effective ways to prevent electrical fires in homes?"
+ *     responses:
+ *       200:
+ *         description: Prompt updated and new response generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     prompt:
+ *                       type: string
+ *                     response:
+ *                       type: string
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                     likes:
+ *                       type: number
+ *                       default: 0
+ *                     dislikes:
+ *                       type: number
+ *                       default: 0
+ *                     userFeedback:
+ *                       type: string
+ *                       enum: [like, dislike, null]
+ *                       default: null
+ *                 updatedSession:
+ *                   type: object
+ *                 messageId:
+ *                   type: string
+ *                 promptUpdated:
+ *                   type: boolean
+ *                 oldPrompt:
+ *                   type: string
+ *                 newPrompt:
+ *                   type: string
+ *       400:
+ *         description: Bad request - newPrompt is required
+ *       404:
+ *         description: Session or message not found
+ *       500:
+ *         description: Internal server error
  *   put:
  *     summary: Update prompt and regenerate AI response
  *     description: Updates the user's prompt for a specific message and generates a new AI response based on the updated question
@@ -656,6 +733,9 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
  *         description: Internal server error
  */
 router.put('/chat/:sessionId/message/:messageId/prompt', updatePrompt);
+
+// PATCH route for prompt update (semantically correct for partial updates)
+router.patch('/chat/:sessionId/message/:messageId/prompt', updatePrompt);
 
 // Alternative POST route for prompt update
 router.post('/chat/:sessionId/message/:messageId/prompt', updatePrompt);
