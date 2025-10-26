@@ -12,7 +12,7 @@ A secure, scalable backend API for fire safety and emergency response chat, buil
 - **Health monitoring** - Built-in health checks and status endpoints
 
 ## 🛠 Tech Stack
-- **Backend**: Node.js 22.x, Express
+- **Backend**: Node.js 22.21.0 LTS, Express
 - **Database**: MongoDB, Mongoose
 - **Validation**: Zod (runtime type checking)
 - **Logging**: Morgan (HTTP request logging)
@@ -53,7 +53,7 @@ A secure, scalable backend API for fire safety and emergency response chat, buil
    ```
 
 **Requirements:**
-- Node.js 22.x or higher
+- Node.js 22.21.0 LTS or higher
 - MongoDB (local or cloud)
 - OpenRouter API key
 
@@ -222,8 +222,8 @@ NODE_ENV=development
 ### Automatic Deployment (GitHub Actions)
 The application automatically deploys when you push to the `main` branch:
 
-1. **GitHub Actions** builds and tests the application with Node.js 22.x
-2. **Server Setup** installs Node.js 22.x, PM2, and Caddy
+1. **GitHub Actions** builds and tests the application with Node.js 22.21.0 LTS
+2. **Server Setup** installs Node.js 22.21.0 LTS, PM2, and Caddy
 3. **PM2** manages the Node.js process in production
 4. **Caddy** handles reverse proxy and SSL certificates
 5. **Live deployment** at `https://ai.ekowlabs.space`
@@ -276,7 +276,7 @@ pm2 stop ai-backend
 ## 🔧 Recent Updates & Fixes
 
 ### Latest Improvements (v1.0.0)
-- ✅ **Node.js 22.x** - Updated to latest LTS version
+- ✅ **Node.js 22.21.0 LTS** - Updated to latest LTS version
 - ✅ **Fixed deployment issues** - Resolved "npm: command not found" error
 - ✅ **Enhanced CI/CD** - Improved GitHub Actions workflow
 - ✅ **Production setup** - Automated server configuration with install-caddy.sh
@@ -305,10 +305,10 @@ ai-backend/
 
 The GitHub Actions workflow (`deploy-ai-backend.yml`) handles:
 
-1. **Code checkout** and Node.js 22.x setup
+1. **Code checkout** and Node.js 22.21.0 LTS setup
 2. **Dependency installation** with npm ci
 3. **Test execution** (if tests exist)
-4. **Server setup** with Node.js 22.x, PM2, and Caddy installation
+4. **Server setup** with Node.js 22.21.0 LTS, PM2, and Caddy installation
 5. **Deployment package creation** with PM2 configuration
 6. **Server deployment** via SSH
 7. **Health checks** and status verification

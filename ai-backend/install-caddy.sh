@@ -18,11 +18,11 @@ sudo apt update -y && sudo apt upgrade -y
 sudo apt install -y curl debian-keyring debian-archive-keyring apt-transport-https gnupg
 
 # === 2.5. Install Node.js ===
-echo "📦 Installing Node.js..."
+echo "📦 Installing Node.js v22.21.0 LTS..."
 if ! command -v node &> /dev/null; then
-    # Install Node.js 22.x
+    # Install Node.js 22.21.0 LTS
     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt install -y nodejs
+    sudo apt install -y nodejs=22.21.0-1nodesource1
     echo "✅ Node.js $(node --version) installed successfully"
 else
     echo "✅ Node.js $(node --version) is already installed"
