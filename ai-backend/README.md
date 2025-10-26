@@ -1,25 +1,88 @@
 # Fire Assistant AI – Chat Support Backend
 
-A secure, scalable backend API for fire safety and emergency response chat, built with Node.js, Express, and MongoDB.
+A secure, scalable backend API for fire safety and emergency response chat, built with Node.js 22.21.0 LTS, Express, and MongoDB. This backend powers AI-driven conversations about fire safety, emergency procedures, and prevention strategies.
+
+## 🎯 Purpose
+
+This backend serves as the foundation for fire safety education and emergency response applications. It provides:
+
+- **Educational AI Chat** - Interactive conversations about fire prevention
+- **Emergency Guidance** - Real-time advice during fire emergencies  
+- **Safety Training** - Structured learning about fire safety protocols
+- **Mobile App Support** - API backend for React Native/Expo applications
+
+## 🏢 Use Cases
+
+- **Fire Departments** - Training and public education tools
+- **Schools & Universities** - Fire safety education programs
+- **Corporate Safety** - Workplace fire safety training
+- **Residential Apps** - Home fire safety guidance
+- **Emergency Services** - Quick reference during incidents
+
+[![Node.js Version](https://img.shields.io/badge/node.js-22.21.0%20LTS-green.svg)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/express-5.1.0-blue.svg)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/mongodb-8.16.4-green.svg)](https://mongodb.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## 📋 Table of Contents
+
+- [Purpose](#-purpose)
+- [Use Cases](#-use-cases)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [API Documentation](#-api-documentation)
+- [API Routes & Frontend Usage](#api-routes--frontend-usage)
+- [Environment Variables](#-environment-variables)
+- [Deployment](#-deployment)
+- [Monitoring & Health Checks](#-monitoring--health-checks)
+- [Security Features](#-security-features)
+- [Recent Updates](#-recent-updates--fixes)
+- [Project Structure](#-project-structure)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Troubleshooting](#-troubleshooting)
+- [Best Practices](#-best-practices)
+- [License](#-license)
 
 ## 🌟 Features
-- **Chat session management** - Persistent conversations with unique session IDs
-- **Message storage and retrieval** - MongoDB-backed message history
-- **Real AI responses** - OpenRouter integration via LangChain
-- **Modular, clean ES6+ codebase** - Well-structured, maintainable code
-- **Automatic deployment** - GitHub Actions CI/CD pipeline
-- **Production-ready** - PM2 process management with Caddy reverse proxy
-- **Health monitoring** - Built-in health checks and status endpoints
+
+### Core Functionality
+- **💬 Chat session management** - Persistent conversations with unique session IDs
+- **💾 Message storage and retrieval** - MongoDB-backed message history
+- **🤖 Real AI responses** - OpenRouter integration via LangChain
+- **🔍 Smart context** - Maintains conversation context across messages
+
+### Development & Deployment
+- **🏗️ Modular, clean ES6+ codebase** - Well-structured, maintainable code
+- **🚀 Automatic deployment** - GitHub Actions CI/CD pipeline
+- **⚡ Production-ready** - PM2 process management with Caddy reverse proxy
+- **📊 Health monitoring** - Built-in health checks and status endpoints
+
+### Security & Performance
+- **🔒 Secure API** - Input validation with Zod schemas
+- **🌐 CORS enabled** - Ready for React Native/Expo integration
+- **📝 Request logging** - Morgan HTTP request logging
+- **🛡️ Security headers** - HSTS, XSS protection, and more
 
 ## 🛠 Tech Stack
-- **Backend**: Node.js 22.21.0 LTS, Express
-- **Database**: MongoDB, Mongoose
-- **Validation**: Zod (runtime type checking)
-- **Logging**: Morgan (HTTP request logging)
-- **AI Integration**: LangChain (LLM integration)
-- **Process Management**: PM2
-- **Reverse Proxy**: Caddy (automatic HTTPS)
-- **Deployment**: GitHub Actions (CI/CD)
+
+### Backend Technologies
+- **Node.js 22.21.0 LTS** - JavaScript runtime
+- **Express 5.1.0** - Web framework
+- **MongoDB 8.16.4** - NoSQL database
+- **Mongoose 8.16.4** - MongoDB object modeling
+
+### Development Tools
+- **Zod 3.22.4** - Runtime type checking and validation
+- **Morgan 1.10.1** - HTTP request logging
+- **LangChain 0.3.30** - LLM integration framework
+- **OpenRouter API** - AI model access
+
+### Production Infrastructure
+- **PM2** - Process management for Node.js
+- **Caddy** - Reverse proxy with automatic HTTPS
+- **GitHub Actions** - CI/CD pipeline
+- **Ubuntu Server** - Production environment
 
 ## 🚀 Quick Start
 
@@ -70,9 +133,24 @@ The application is automatically deployed via GitHub Actions to `https://ai.ekow
 - **Health Check**: `https://ai.ekowlabs.space/api/health`
 
 ## 📚 API Documentation
-- **Swagger UI**: [https://ai.ekowlabs.space/api-docs](https://ai.ekowlabs.space/api-docs)
-- **Local Development**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
-- All endpoints are documented and testable in Swagger UI
+
+### Interactive Documentation
+- **🌐 Live Swagger UI**: [https://ai.ekowlabs.space/api-docs](https://ai.ekowlabs.space/api-docs)
+- **💻 Local Development**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+- **📖 All endpoints** are documented and testable in Swagger UI
+
+### API Overview
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check and system status |
+| `/api/chat` | POST | Start new chat session |
+| `/api/chat` | GET | List recent chat sessions |
+| `/api/chat/:sessionId` | GET | Get specific chat session |
+| `/api/chat/:sessionId/message` | POST | Send message to existing session |
+
+### Base URLs
+- **Production**: `https://ai.ekowlabs.space/api`
+- **Local Development**: `http://localhost:5000/api`
 
 ---
 
