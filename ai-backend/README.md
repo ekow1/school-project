@@ -12,14 +12,14 @@ A secure, scalable backend API for fire safety and emergency response chat, buil
 - **Health monitoring** - Built-in health checks and status endpoints
 
 ## 🛠 Tech Stack
-- **Backend**: Node.js, Express
+- **Backend**: Node.js 22.x, Express
 - **Database**: MongoDB, Mongoose
 - **Validation**: Zod (runtime type checking)
 - **Logging**: Morgan (HTTP request logging)
 - **AI Integration**: LangChain (LLM integration)
 - **Process Management**: PM2
 - **Reverse Proxy**: Caddy (automatic HTTPS)
-- **Deployment**: GitHub Actions
+- **Deployment**: GitHub Actions (CI/CD)
 
 ## 🚀 Quick Start
 
@@ -51,6 +51,11 @@ A secure, scalable backend API for fire safety and emergency response chat, buil
    ```bash
    npm run dev
    ```
+
+**Requirements:**
+- Node.js 22.x or higher
+- MongoDB (local or cloud)
+- OpenRouter API key
 
 6. **Access the API**
    - **API Base URL**: `http://localhost:5000`
