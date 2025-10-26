@@ -35,7 +35,21 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
+
+    - name: Verify upload
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          cd ~
+          echo "🔍 Checking upload location..."
+          ls -la install-caddy.sh
+          echo "📁 Home directory contents:"
+          ls -la
 
     - name: Run Caddy installation
       uses: appleboy/ssh-action@v1.0.3
