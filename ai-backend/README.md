@@ -301,10 +301,17 @@ NODE_ENV=development
 The application automatically deploys when you push to the `main` branch:
 
 1. **GitHub Actions** builds and tests the application with Node.js 22.21.0 LTS
-2. **Server Setup** installs Node.js 22.21.0 LTS, PM2, and Caddy
-3. **PM2** manages the Node.js process in production
-4. **Caddy** handles reverse proxy and SSL certificates
+2. **Server Setup** installs Node.js 22.21.0 LTS using robust NodeSource installer
+3. **PM2 Installation** - Process management for Node.js applications
+4. **Caddy Setup** - Reverse proxy with automatic HTTPS
 5. **Live deployment** at `https://ai.ekowlabs.space`
+
+#### 🔧 Enhanced Installation Process
+- **Robust NodeSource installer** with error handling and logging
+- **Architecture detection** for proper package selection
+- **GPG key management** for secure package verification
+- **Prerequisites installation** (apt-transport-https, ca-certificates, etc.)
+- **Installation verification** with version checking
 
 ### Manual Deployment
 If you need to deploy manually:
@@ -354,7 +361,8 @@ pm2 stop ai-backend
 ## 🔧 Recent Updates & Fixes
 
 ### Latest Improvements (v1.0.0)
-- ✅ **Node.js 22.21.0 LTS** - Updated to latest LTS version
+- ✅ **Node.js 22.21.0 LTS** - Updated to latest LTS version with robust installer
+- ✅ **Enhanced NodeSource installer** - Professional installation with error handling
 - ✅ **Fixed deployment issues** - Resolved "npm: command not found" error
 - ✅ **Enhanced CI/CD** - Improved GitHub Actions workflow
 - ✅ **Production setup** - Automated server configuration with install-caddy.sh

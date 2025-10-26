@@ -19,21 +19,62 @@ sudo apt install -y curl debian-keyring debian-archive-keyring apt-transport-htt
 
 # === 2.5. Install Node.js ===
 echo "📦 Installing Node.js v22.21.0 LTS..."
-if ! command -v node &> /dev/null; then
-    # Install Node.js 22.21.0 LTS
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt install -y nodejs=22.21.0-1nodesource1
-    echo "✅ Node.js $(node --version) installed successfully"
-else
-    echo "✅ Node.js $(node --version) is already installed"
-fi
 
-# Verify npm is available
-if ! command -v npm &> /dev/null; then
-    echo "❌ npm not found, installing..."
-    sudo apt install -y npm
+# Function to install Node.js using robust NodeSource installer
+install_nodejs() {
+    echo "🔧 Setting up NodeSource repository for Node.js 22.x..."
+    
+    # Check if Node.js is already installed
+    if command -v node &> /dev/null; then
+        echo "✅ Node.js $(node --version) is already installed"
+        return 0
+    fi
+    
+    # Install prerequisites
+    echo "📋 Installing prerequisites..."
+    sudo apt update -y
+    sudo apt install -y apt-transport-https ca-certificates curl gnupg
+    
+    # Create keyrings directory
+    sudo mkdir -p /usr/share/keyrings
+    
+    # Download and add NodeSource signing key
+    echo "🔑 Adding NodeSource GPG key..."
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | \
+        sudo gpg --dearmor -o /usr/share/keyrings/nodesource.gpg
+    
+    # Determine architecture
+    ARCH=$(dpkg --print-architecture)
+    echo "🏗️ Detected architecture: $ARCH"
+    
+    # Add NodeSource repository
+    echo "📦 Adding NodeSource repository..."
+    echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | \
+        sudo tee /etc/apt/sources.list.d/nodesource.list
+    
+    # Update package list
+    echo "🔄 Updating package list..."
+    sudo apt update -y
+    
+    # Install Node.js
+    echo "⚡ Installing Node.js 22.x..."
+    sudo apt install -y nodejs
+    
+    # Verify installation
+    if command -v node &> /dev/null && command -v npm &> /dev/null; then
+        echo "✅ Node.js $(node --version) and npm $(npm --version) installed successfully"
+        return 0
+    else
+        echo "❌ Node.js installation failed"
+        return 1
+    fi
+}
+
+# Run Node.js installation
+if install_nodejs; then
+    echo "🎉 Node.js installation completed successfully"
 else
-    echo "✅ npm $(npm --version) is available"
+    echo "💥 Node.js installation failed, but continuing with Caddy setup..."
 fi
 
 # === 3. Add and Install Caddy ===
