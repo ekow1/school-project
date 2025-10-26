@@ -132,6 +132,9 @@ router.put('/chat/:sessionId/title', updateSessionTitle);
  */
 router.put('/chat/:sessionId/regenerate/:messageId', regenerateMessageResponse);
 
+// Alternative POST route for regenerate
+router.post('/chat/:sessionId/regenerate/:messageId', regenerateMessageResponse);
+
 // Test route to verify route registration
 router.get('/test-regenerate', (req, res) => {
   res.json({ message: 'Regenerate route is working!' });
