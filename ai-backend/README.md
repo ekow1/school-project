@@ -222,10 +222,11 @@ NODE_ENV=development
 ### Automatic Deployment (GitHub Actions)
 The application automatically deploys when you push to the `main` branch:
 
-1. **GitHub Actions** builds and tests the application
-2. **PM2** manages the Node.js process
-3. **Caddy** handles reverse proxy and SSL certificates
-4. **Live deployment** at `https://ai.ekowlabs.space`
+1. **GitHub Actions** builds and tests the application with Node.js 22.x
+2. **Server Setup** installs Node.js 22.x, PM2, and Caddy
+3. **PM2** manages the Node.js process in production
+4. **Caddy** handles reverse proxy and SSL certificates
+5. **Live deployment** at `https://ai.ekowlabs.space`
 
 ### Manual Deployment
 If you need to deploy manually:
@@ -272,6 +273,16 @@ pm2 stop ai-backend
 - **Automatic HTTPS** via Caddy
 - **Environment variable** protection
 
+## 🔧 Recent Updates & Fixes
+
+### Latest Improvements (v1.0.0)
+- ✅ **Node.js 22.x** - Updated to latest LTS version
+- ✅ **Fixed deployment issues** - Resolved "npm: command not found" error
+- ✅ **Enhanced CI/CD** - Improved GitHub Actions workflow
+- ✅ **Production setup** - Automated server configuration with install-caddy.sh
+- ✅ **Health monitoring** - Added comprehensive health checks
+- ✅ **Error handling** - Better error reporting and troubleshooting
+
 ## 📁 Project Structure
 ```
 ai-backend/
@@ -294,12 +305,13 @@ ai-backend/
 
 The GitHub Actions workflow (`deploy-ai-backend.yml`) handles:
 
-1. **Code checkout** and Node.js setup
+1. **Code checkout** and Node.js 22.x setup
 2. **Dependency installation** with npm ci
 3. **Test execution** (if tests exist)
-4. **Deployment package creation** with PM2 configuration
-5. **Server deployment** via SSH
-6. **Health checks** and status verification
+4. **Server setup** with Node.js 22.x, PM2, and Caddy installation
+5. **Deployment package creation** with PM2 configuration
+6. **Server deployment** via SSH
+7. **Health checks** and status verification
 
 ## 🐛 Troubleshooting
 
