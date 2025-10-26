@@ -16,6 +16,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Verify install-caddy.sh exists
+      run: |
+        echo "🔍 Checking if install-caddy.sh exists..."
+        ls -la ai-backend/install-caddy.sh
+        if [ -f "ai-backend/install-caddy.sh" ]; then
+          echo "✅ install-caddy.sh found"
+        else
+          echo "❌ install-caddy.sh not found"
+          exit 1
+        fi
+
     - name: Upload Caddy installation script
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -35,8 +46,23 @@ jobs:
         port: 22
         script: |
           cd ~
-          chmod +x install-caddy.sh
-          ./install-caddy.sh
+          echo "🔍 Checking current directory contents..."
+          ls -la
+          echo "🔍 Looking for install-caddy.sh..."
+          find . -name "install-caddy.sh" -type f
+          
+          if [ -f install-caddy.sh ]; then
+            echo "✅ Found install-caddy.sh, making executable..."
+            chmod +x install-caddy.sh
+            echo "🚀 Running install-caddy.sh..."
+            ./install-caddy.sh
+          else
+            echo "❌ install-caddy.sh not found in home directory"
+            echo "📁 Current directory: $(pwd)"
+            echo "📁 Directory contents:"
+            ls -la
+            exit 1
+          fi
           
           # Create app directory
           sudo mkdir -p /opt/ai-backend /var/log/pm2
