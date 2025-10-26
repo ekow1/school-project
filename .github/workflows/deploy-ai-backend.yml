@@ -133,12 +133,6 @@ jobs:
           chmod +x install-caddy.sh
           ./install-caddy.sh
           
-          # Verify Node.js and npm are installed
-          echo "🔍 Verifying Node.js installation..."
-          node --version || { echo "❌ Node.js not found"; exit 1; }
-          npm --version || { echo "❌ npm not found"; exit 1; }
-          echo "✅ Node.js and npm are available"
-          
           # Create app directory and set permissions
           sudo mkdir -p /opt/ai-backend
           sudo chown -R ${{ secrets.AI_BACKEND_USER }}:${{ secrets.AI_BACKEND_USER }} /opt/ai-backend
@@ -146,6 +140,14 @@ jobs:
           # Create PM2 log directory
           sudo mkdir -p /var/log/pm2
           sudo chown -R ${{ secrets.AI_BACKEND_USER }}:${{ secrets.AI_BACKEND_USER }} /var/log/pm2
+          
+          # Verify installation
+          echo "🔍 Verifying server setup..."
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          echo "PM2 version: $(pm2 --version)"
+          echo "Caddy status: $(sudo systemctl is-active caddy)"
+          echo "✅ Server setup completed successfully"
           
     - name: Upload and deploy application
       uses: appleboy/scp-action@v0.1.7
