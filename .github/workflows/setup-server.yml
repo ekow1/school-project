@@ -1,0 +1,80 @@
+name: Setup Server Environment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ai-backend/install-caddy.sh'
+
+jobs:
+  setup-server:
+    name: Setup Server Environment
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Upload Caddy installation script
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        source: "ai-backend/install-caddy.sh"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+        
+    - name: Run Caddy installation script
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          cd ~
+          if [ ! -f install-caddy.sh ]; then
+            echo "❌ install-caddy.sh not found in $(pwd)"
+            ls -la
+            exit 1
+          fi
+
+          # Make script executable and run it
+          chmod +x install-caddy.sh
+          ./install-caddy.sh
+
+          echo "📦 Installing Node.js and PM2..."
+          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+          sudo apt install -y nodejs
+          sudo npm install -g pm2
+
+          echo "🔍 Verifying installations..."
+          node --version
+          npm --version
+          pm2 --version
+
+          # Create app directory
+          sudo mkdir -p /opt/ai-backend /var/log/pm2
+          sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
+
+          echo "✅ Environment ready for deployment"
+          
+    - name: Verify server setup
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔍 Final verification..."
+          echo "Node.js: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "PM2: $(pm2 --version)"
+          echo "Caddy: $(sudo systemctl is-active caddy)"
+          echo "Directories:"
+          ls -la /opt/ai-backend
+          ls -la /var/log/pm2
+          echo "✅ Server setup completed successfully!"
