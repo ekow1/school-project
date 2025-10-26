@@ -27,9 +27,11 @@ curl --request PUT \
 4. **Body Content**: `{"newPrompt": "What are the most important fire safety tips for offices?"}`
 
 ### **✅ Recommended Methods (in order of preference):**
-1. **PATCH** - Semantically correct for partial resource updates
-2. **PUT** - Alternative method (works)
-3. **POST** - Alternative method (works)
+1. **PATCH** - Semantically correct for partial resource updates (✅ **WORKING NOW**)
+2. **PUT** - Alternative method (✅ **WORKING NOW**)
+3. **POST** - Alternative method (✅ **WORKING NOW**)
+
+**✅ All methods are now available and working!**
 
 ---
 
@@ -90,7 +92,7 @@ Content-Type: application/json
 2. Check the response
 
 #### **✅ WORKING CONFIGURATION (Verified)**
-- **Method**: `PATCH` (recommended), `PUT`, or `POST`
+- **Method**: `PATCH` (✅ **RECOMMENDED**), `PUT`, or `POST`
 - **URL**: `https://ai.ekowlabs.space/api/chat/68fe08c1ae5b0066605af7ce/message/3aab2ccc-bc30-456d-b922-bf4ddc0a0c16/prompt`
 - **Headers**: `Content-Type: application/json`
 - **Body**: `{"newPrompt": "What are the most important fire safety tips for offices?"}`

@@ -360,15 +360,19 @@ export const updatePrompt = async (req, res) => {
     const sortedMessages = session.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
     res.json({
-      message: session.messages[messageIndex],
-      updatedSession: {
-        ...session.toObject(),
-        messages: sortedMessages
-      },
-      messageId: messageId,
-      promptUpdated: true,
-      oldPrompt: message.prompt,
-      newPrompt: newPrompt
+      success: true,
+      message: "Prompt updated and AI response regenerated successfully",
+      data: {
+        message: session.messages[messageIndex],
+        updatedSession: {
+          ...session.toObject(),
+          messages: sortedMessages
+        },
+        messageId: messageId,
+        promptUpdated: true,
+        oldPrompt: message.prompt,
+        newPrompt: newPrompt
+      }
     });
     
   } catch (err) {

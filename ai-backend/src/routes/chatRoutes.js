@@ -576,44 +576,53 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
  *                 example: "What are the most effective ways to prevent electrical fires in homes?"
  *     responses:
  *       200:
- *         description: Prompt updated and new response generated successfully
+ *         description: Prompt updated and AI response regenerated successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
+ *                   type: string
+ *                   example: "Prompt updated and AI response regenerated successfully"
+ *                 data:
  *                   type: object
  *                   properties:
- *                     id:
+ *                     message:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         prompt:
+ *                           type: string
+ *                         response:
+ *                           type: string
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ *                         likes:
+ *                           type: number
+ *                           default: 0
+ *                         dislikes:
+ *                           type: number
+ *                           default: 0
+ *                         userFeedback:
+ *                           type: string
+ *                           enum: [like, dislike, null]
+ *                           default: null
+ *                     updatedSession:
+ *                       type: object
+ *                     messageId:
  *                       type: string
- *                     prompt:
+ *                     promptUpdated:
+ *                       type: boolean
+ *                     oldPrompt:
  *                       type: string
- *                     response:
+ *                     newPrompt:
  *                       type: string
- *                     timestamp:
- *                       type: string
- *                       format: date-time
- *                     likes:
- *                       type: number
- *                       default: 0
- *                     dislikes:
- *                       type: number
- *                       default: 0
- *                     userFeedback:
- *                       type: string
- *                       enum: [like, dislike, null]
- *                       default: null
- *                 updatedSession:
- *                   type: object
- *                 messageId:
- *                   type: string
- *                 promptUpdated:
- *                   type: boolean
- *                 oldPrompt:
- *                   type: string
- *                 newPrompt:
- *                   type: string
  *       400:
  *         description: Bad request - newPrompt is required
  *       404:
@@ -653,44 +662,53 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
  *                 example: "What are the most effective ways to prevent electrical fires in homes?"
  *     responses:
  *       200:
- *         description: Prompt updated and new response generated successfully
+ *         description: Prompt updated and AI response regenerated successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
+ *                   type: string
+ *                   example: "Prompt updated and AI response regenerated successfully"
+ *                 data:
  *                   type: object
  *                   properties:
- *                     id:
+ *                     message:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         prompt:
+ *                           type: string
+ *                         response:
+ *                           type: string
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ *                         likes:
+ *                           type: number
+ *                           default: 0
+ *                         dislikes:
+ *                           type: number
+ *                           default: 0
+ *                         userFeedback:
+ *                           type: string
+ *                           enum: [like, dislike, null]
+ *                           default: null
+ *                     updatedSession:
+ *                       type: object
+ *                     messageId:
  *                       type: string
- *                     prompt:
+ *                     promptUpdated:
+ *                       type: boolean
+ *                     oldPrompt:
  *                       type: string
- *                     response:
+ *                     newPrompt:
  *                       type: string
- *                     timestamp:
- *                       type: string
- *                       format: date-time
- *                     likes:
- *                       type: number
- *                       default: 0
- *                     dislikes:
- *                       type: number
- *                       default: 0
- *                     userFeedback:
- *                       type: string
- *                       enum: [like, dislike, null]
- *                       default: null
- *                 updatedSession:
- *                   type: object
- *                 messageId:
- *                   type: string
- *                 promptUpdated:
- *                   type: boolean
- *                 oldPrompt:
- *                   type: string
- *                 newPrompt:
- *                   type: string
  *       400:
  *         description: Bad request - newPrompt is required
  *       404:
