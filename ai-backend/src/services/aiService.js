@@ -122,6 +122,10 @@ export async function generateSessionTitle(conversationHistory = []) {
       title = "Candle Fire Safety";
     } else if (firstResponse.toLowerCase().includes('escape')) {
       title = "Fire Escape Planning";
+    } else if (firstResponse.toLowerCase().includes('surge')) {
+      title = "Surge Protector Safety";
+    } else if (firstResponse.toLowerCase().includes('wiring')) {
+      title = "Electrical Wiring Safety";
     } else {
       // Try to extract a meaningful title from the response
       const words = firstResponse.toLowerCase().split(' ');
