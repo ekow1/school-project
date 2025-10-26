@@ -298,4 +298,81 @@ export const likeMessage = async (req, res) => {
     console.error('🚨 Like Message Error:', err);
     res.status(500).json({ error: 'Failed to update message feedback' });
   }
+};
+
+// Update prompt and regenerate response for a specific message
+export const updatePrompt = async (req, res) => {
+  try {
+    const { sessionId, messageId } = req.params;
+    const { newPrompt } = req.body;
+    
+    if (!newPrompt || newPrompt.trim() === '') {
+      return res.status(400).json({ error: 'New prompt is required' });
+    }
+    
+    // Find the session
+    const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    
+    // Find the specific message
+    const messageIndex = session.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return res.status(404).json({ error: 'Message not found' });
+    
+    const message = session.messages[messageIndex];
+    
+    console.log('🔄 Updating prompt for message:', messageId);
+    console.log('📝 Old prompt:', message.prompt);
+    console.log('📝 New prompt:', newPrompt);
+    
+    // Get conversation history up to this point (excluding the current message)
+    const conversationHistory = session.messages.slice(0, messageIndex);
+    
+    console.log('📊 Conversation history length:', conversationHistory.length);
+    
+    // Generate new AI response using the new prompt with conversation context
+    const newResponse = await getLLMResponse(newPrompt, conversationHistory);
+    
+    // Update the message with new prompt, response, and timestamp
+    session.messages[messageIndex].prompt = newPrompt;
+    session.messages[messageIndex].response = newResponse;
+    session.messages[messageIndex].timestamp = new Date();
+    
+    // Reset likes/dislikes for the updated message
+    session.messages[messageIndex].likes = 0;
+    session.messages[messageIndex].dislikes = 0;
+    session.messages[messageIndex].userFeedback = null;
+    
+    // Update session's last message if this was the last message
+    if (messageIndex === session.messages.length - 1) {
+      session.lastMessage = newResponse;
+    }
+    
+    // Update session timestamp
+    session.timestamp = new Date();
+    
+    // Regenerate session title based on updated conversation
+    const updatedTitle = await generateSessionTitle(session.messages);
+    session.title = updatedTitle;
+    
+    await session.save();
+    
+    // Sort messages by timestamp to ensure proper order
+    const sortedMessages = session.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    res.json({
+      message: session.messages[messageIndex],
+      updatedSession: {
+        ...session.toObject(),
+        messages: sortedMessages
+      },
+      messageId: messageId,
+      promptUpdated: true,
+      oldPrompt: message.prompt,
+      newPrompt: newPrompt
+    });
+    
+  } catch (err) {
+    console.error('🚨 Update Prompt Error:', err);
+    res.status(500).json({ error: 'Failed to update prompt and regenerate response' });
+  }
 }; 
