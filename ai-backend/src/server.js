@@ -34,6 +34,12 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api', chatRoutes);
+
+// Debug endpoint to check Swagger spec
+app.get('/api/swagger-spec', (req, res) => {
+  res.json(swaggerSpec);
+});
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handler

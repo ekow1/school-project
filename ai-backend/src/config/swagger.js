@@ -19,8 +19,12 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routes/*.js', './src/models/*.js'],
+  apis: ['./src/routes/*.js', './src/models/*.js', './routes/*.js', './models/*.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
+
+// Debug: Log the generated spec
+console.log('Swagger spec generated:', Object.keys(swaggerSpec));
+
 export default swaggerSpec; 
