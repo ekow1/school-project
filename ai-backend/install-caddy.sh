@@ -339,12 +339,21 @@ $DOMAIN {
 }
 EOF
 
-# === 7. Restart and Enable Caddy ===
+# === 7. Install PM2 for Node.js Process Management ===
+echo "📦 Installing PM2 for Node.js process management..."
+if ! command -v pm2 &> /dev/null; then
+    sudo npm install -g pm2
+    echo "✅ PM2 installed successfully"
+else
+    echo "✅ PM2 is already installed"
+fi
+
+# === 8. Restart and Enable Caddy ===
 echo "🔄 Restarting Caddy..."
 sudo systemctl reload caddy || sudo systemctl restart caddy
 sudo systemctl enable caddy
 
-# === 8. Verify Caddy Status ===
+# === 9. Verify Caddy Status ===
 echo ""
 echo "🔍 Checking Caddy status..."
 sudo systemctl status caddy --no-pager
