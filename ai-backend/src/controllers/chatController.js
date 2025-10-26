@@ -14,6 +14,9 @@ export const createSession = async (req, res) => {
       prompt: text,
       response: aiText,
       timestamp: new Date(),
+      likes: 0,
+      dislikes: 0,
+      userFeedback: null
     };
     // Generate contextual title based on the AI response
     const contextualTitle = await generateSessionTitle([messageObj]);
@@ -66,6 +69,9 @@ export const addMessage = async (req, res) => {
       prompt: text,
       response: aiText,
       timestamp: new Date(),
+      likes: 0,
+      dislikes: 0,
+      userFeedback: null
     };
     
     session.messages.push(messageObj);
@@ -119,6 +125,9 @@ export const getSessionById = async (req, res) => {
         prompt: msg.prompt,
         response: msg.response,
         timestamp: msg.timestamp,
+        likes: msg.likes || 0,
+        dislikes: msg.dislikes || 0,
+        userFeedback: msg.userFeedback || null
       }))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
@@ -214,5 +223,79 @@ export const regenerateMessageResponse = async (req, res) => {
   } catch (err) {
     console.error('🚨 Regenerate Error:', err);
     res.status(500).json({ error: 'Failed to regenerate message response' });
+  }
+};
+
+// Like or dislike a specific message
+export const likeMessage = async (req, res) => {
+  try {
+    const { sessionId, messageId } = req.params;
+    const { action } = req.body; // 'like' or 'dislike'
+    
+    if (!action || !['like', 'dislike'].includes(action)) {
+      return res.status(400).json({ error: 'Action must be "like" or "dislike"' });
+    }
+    
+    // Find the session
+    const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    
+    // Find the specific message
+    const messageIndex = session.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return res.status(404).json({ error: 'Message not found' });
+    
+    const message = session.messages[messageIndex];
+    
+    // Initialize likes/dislikes if they don't exist
+    if (!message.likes) message.likes = 0;
+    if (!message.dislikes) message.dislikes = 0;
+    if (!message.userFeedback) message.userFeedback = null;
+    
+    // Update likes/dislikes based on current feedback and new action
+    if (message.userFeedback === 'like' && action === 'like') {
+      // Already liked, remove like
+      message.likes = Math.max(0, message.likes - 1);
+      message.userFeedback = null;
+    } else if (message.userFeedback === 'dislike' && action === 'dislike') {
+      // Already disliked, remove dislike
+      message.dislikes = Math.max(0, message.dislikes - 1);
+      message.userFeedback = null;
+    } else if (message.userFeedback === 'like' && action === 'dislike') {
+      // Change from like to dislike
+      message.likes = Math.max(0, message.likes - 1);
+      message.dislikes = message.dislikes + 1;
+      message.userFeedback = 'dislike';
+    } else if (message.userFeedback === 'dislike' && action === 'like') {
+      // Change from dislike to like
+      message.dislikes = Math.max(0, message.dislikes - 1);
+      message.likes = message.likes + 1;
+      message.userFeedback = 'like';
+    } else if (!message.userFeedback) {
+      // No previous feedback, add new feedback
+      if (action === 'like') {
+        message.likes = message.likes + 1;
+        message.userFeedback = 'like';
+      } else {
+        message.dislikes = message.dislikes + 1;
+        message.userFeedback = 'dislike';
+      }
+    }
+    
+    // Update the message in the session
+    session.messages[messageIndex] = message;
+    await session.save();
+    
+    res.json({
+      message: message,
+      action: action,
+      likes: message.likes,
+      dislikes: message.dislikes,
+      userFeedback: message.userFeedback,
+      messageId: messageId
+    });
+    
+  } catch (err) {
+    console.error('🚨 Like Message Error:', err);
+    res.status(500).json({ error: 'Failed to update message feedback' });
   }
 }; 

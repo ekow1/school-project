@@ -6,6 +6,13 @@ const MessageSchema = new Schema({
   prompt: { type: String, required: true },
   response: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  likes: { type: Number, default: 0 },
+  dislikes: { type: Number, default: 0 },
+  userFeedback: { 
+    type: String, 
+    enum: ['like', 'dislike', null], 
+    default: null 
+  }
 });
 
 export default MessageSchema;

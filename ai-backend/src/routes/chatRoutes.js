@@ -1,5 +1,5 @@
 import express from 'express';
-import { createSession, addMessage, getSessions, getSessionById, updateSessionTitle, regenerateMessageResponse } from '../controllers/chatController.js';
+import { createSession, addMessage, getSessions, getSessionById, updateSessionTitle, regenerateMessageResponse, likeMessage } from '../controllers/chatController.js';
 
 const router = express.Router();
 
@@ -435,5 +435,69 @@ router.put('/chat/:sessionId/regenerate/:messageId', regenerateMessageResponse);
 // Alternative POST route for regenerate
 router.post('/chat/:sessionId/regenerate/:messageId', regenerateMessageResponse);
 
+/**
+ * @swagger
+ * /chat/{sessionId}/message/{messageId}/like:
+ *   post:
+ *     summary: Like or dislike a specific message
+ *     description: Allows users to like or dislike AI responses to provide feedback
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the chat session
+ *         example: "68fdec6c8926e0f530e312b5"
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the message to like/dislike
+ *         example: "8f14375a-1601-48d9-b950-e2ac1da2d80a"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - action
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [like, dislike]
+ *                 description: The feedback action to perform
+ *                 example: "like"
+ *     responses:
+ *       200:
+ *         description: Message feedback updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: object
+ *                 action:
+ *                   type: string
+ *                 likes:
+ *                   type: number
+ *                 dislikes:
+ *                   type: number
+ *                 userFeedback:
+ *                   type: string
+ *                   enum: [like, dislike, null]
+ *                 messageId:
+ *                   type: string
+ *       400:
+ *         description: Bad request - invalid action
+ *       404:
+ *         description: Session or message not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
 
 export default router; 
