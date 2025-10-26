@@ -3,12 +3,8 @@ name: Complete Deployment Pipeline
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'ai-backend/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'ai-backend/**'
   workflow_dispatch:
 
 jobs:
