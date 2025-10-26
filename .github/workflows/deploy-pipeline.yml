@@ -43,9 +43,9 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
 
-    - name: Run Caddy installation
+    - name: Run Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -53,31 +53,11 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          #!/bin/bash
-          set -e
-          
-          # Path to the Caddy installation script
-          SCRIPT_PATH=./install-caddy.sh
-          
-          # Check if the script exists
-          if [ -f "$SCRIPT_PATH" ]; then
-              echo "✅ Found install-caddy.sh, making executable..."
-              chmod +x "$SCRIPT_PATH"
-              echo "🚀 Running install-caddy.sh..."
-              "$SCRIPT_PATH"
-          else
-              echo "❌ install-caddy.sh not found at $SCRIPT_PATH"
-              echo "📁 Current directory: $(pwd)"
-              echo "📁 Directory contents:"
-              ls -la
-              exit 1
-          fi
-          
-          # Create app directory and PM2 logs
+          chmod +x ~/install-caddy.sh
+          ~/install-caddy.sh
+          # Create app directory and PM2 log folder
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
-          
-          echo "✅ Server environment setup completed"
 
   deploy-app:
     name: Deploy AI Backend Application
