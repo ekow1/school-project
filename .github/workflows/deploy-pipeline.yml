@@ -43,7 +43,8 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+        strip_components: 1
 
     - name: Run Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
