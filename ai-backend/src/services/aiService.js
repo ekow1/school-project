@@ -22,7 +22,10 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     if (conversationHistory.length > 0) {
       contextPrompt += `\n\nPrevious conversation:\n`;
       conversationHistory.forEach(msg => {
-        contextPrompt += `Human: ${msg.prompt}\nAssistant: ${msg.response}\n\n`;
+        // Only include messages with actual responses (not empty ones)
+        if (msg.response && msg.response.trim() !== '') {
+          contextPrompt += `Human: ${msg.prompt}\nAssistant: ${msg.response}\n\n`;
+        }
       });
     }
     
@@ -31,9 +34,16 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     const prompt = PromptTemplate.fromTemplate("{input}");
     const chain = new LLMChain({ llm: model, prompt });
     const response = await chain.call({ input: contextPrompt });
+    
+    // Ensure we have a valid response
+    if (!response.text || response.text.trim() === '') {
+      throw new Error('Empty response from AI service');
+    }
+    
     return response.text;
   } catch (error) {
     console.error('LLM Error:', error);
-    throw error;
+    // Return a fallback response instead of throwing
+    return `I apologize, but I'm having trouble processing your request right now. Please try again. If the problem persists, please rephrase your question about fire safety.`;
   }
 }
