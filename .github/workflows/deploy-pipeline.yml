@@ -30,7 +30,7 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "ai-backend/install-caddy.tar.gz"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.tar.gz"
 
     - name: Run Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
@@ -41,9 +41,29 @@ jobs:
         port: 22
         script: |
           cd ~
+          echo "🔍 Checking for install-caddy.tar.gz..."
+          ls -la
+          
+          if [ ! -f install-caddy.tar.gz ]; then
+            echo "❌ install-caddy.tar.gz not found in $(pwd)"
+            echo "📁 Contents of current directory:"
+            ls -la
+            exit 1
+          fi
+          
           echo "📦 Extracting install-caddy.tar.gz..."
           tar -xzf install-caddy.tar.gz
           rm install-caddy.tar.gz
+          
+          echo "🔍 Checking extracted files..."
+          ls -la
+          
+          if [ ! -f install-caddy.sh ]; then
+            echo "❌ install-caddy.sh not found after extraction"
+            echo "📁 Contents of current directory:"
+            ls -la
+            exit 1
+          fi
           
           echo "🔧 Making install-caddy.sh executable..."
           chmod +x install-caddy.sh
