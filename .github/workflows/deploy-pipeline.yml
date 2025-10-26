@@ -93,6 +93,56 @@ jobs:
           sudo mkdir -p /opt/ai-backend /var/log/ai-backend
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/ai-backend
 
+    - name: Update Caddy configuration for Swagger
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔄 Updating Caddy configuration for Swagger docs..."
+          
+          # Update Caddyfile to include /api-docs routing
+          sudo tee /etc/caddy/Caddyfile << 'EOF'
+          ai.ekowlabs.space {
+              # Try to proxy to backend first, fallback to status page
+              @backend {
+                  path /api/*
+              }
+              
+              # Serve status page for root and non-API routes
+              @status {
+                  not path /api/*
+                  not path /api-docs*
+              }
+              
+              # Route API requests and docs to backend
+              handle @backend {
+                  reverse_proxy localhost:5000 {
+                      health_uri /api/health
+                      health_interval 10s
+                      health_timeout 5s
+                  }
+              }
+              
+              # Route Swagger docs to backend
+              handle /api-docs* {
+                  reverse_proxy localhost:5000
+              }
+              
+              # Serve status page for other routes
+              handle @status {
+                  root * /var/www/html
+                  file_server
+              }
+          }
+          EOF
+          
+          # Reload Caddy configuration
+          sudo systemctl reload caddy
+          echo "✅ Caddy configuration updated and reloaded"
+
   deploy-app:
     name: Deploy AI Backend Application
     runs-on: ubuntu-latest
