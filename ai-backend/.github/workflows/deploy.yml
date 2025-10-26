@@ -1,4 +1,4 @@
-name: Deploy AI Backend to Vercel
+name: Deploy to Vercel
 
 on:
   push:
