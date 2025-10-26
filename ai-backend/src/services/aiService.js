@@ -77,47 +77,60 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
 // Generate contextual session title based on conversation content
 export async function generateSessionTitle(conversationHistory = []) {
   try {
+    console.log('🔍 Starting title generation...');
+    console.log('📊 Total messages received:', conversationHistory.length);
+    
     // Filter out error messages and empty responses
     const validMessages = conversationHistory.filter(msg => 
       msg.response && 
       msg.response.trim() !== '' && 
       !msg.response.includes('trouble processing') &&
-      !msg.response.includes('tools needed')
+      !msg.response.includes('tools needed') &&
+      !msg.response.includes('[B_INST]') // Filter out malformed responses
     );
 
+    console.log('📊 Valid messages after filtering:', validMessages.length);
+
     if (validMessages.length === 0) {
+      console.log('⚠️ No valid messages found, using default title');
       return "Fire Safety Discussion";
     }
 
-    // Create context for title generation
-    let contextPrompt = `Based on this fire safety conversation, generate a concise, descriptive title (max 50 characters) that captures the main fire safety topic discussed. Focus on the fire safety advice given, not the questions asked.\n\nConversation:\n`;
+    // Create a simple title based on the first valid response
+    const firstResponse = validMessages[0].response;
     
-    validMessages.forEach(msg => {
-      contextPrompt += `Q: ${msg.prompt}\nA: ${msg.response}\n\n`;
-    });
+    // Extract key fire safety topics from the response
+    let title = "Fire Safety Discussion";
     
-    contextPrompt += `Generate a title that summarizes the fire safety topic covered in this conversation:`;
-
-    console.log('🔍 Generating session title...');
-    console.log('📊 Valid messages for title:', validMessages.length);
-    
-    const prompt = PromptTemplate.fromTemplate("{input}");
-    const chain = new LLMChain({ llm: model, prompt });
-    const response = await chain.call({ input: contextPrompt });
-    
-    if (!response.text || response.text.trim() === '') {
-      return "Fire Safety Discussion";
-    }
-    
-    // Clean up the response to get just the title
-    let title = response.text.trim();
-    
-    // Remove quotes if present
-    title = title.replace(/^["']|["']$/g, '');
-    
-    // Limit to 50 characters
-    if (title.length > 50) {
-      title = title.substring(0, 47) + '...';
+    if (firstResponse.toLowerCase().includes('electrical')) {
+      title = "Electrical Fire Prevention";
+    } else if (firstResponse.toLowerCase().includes('extinguisher')) {
+      title = "Fire Extinguisher Usage";
+    } else if (firstResponse.toLowerCase().includes('smoke')) {
+      title = "Smoke Detection & Response";
+    } else if (firstResponse.toLowerCase().includes('evacuation')) {
+      title = "Fire Evacuation Procedures";
+    } else if (firstResponse.toLowerCase().includes('prevention')) {
+      title = "Fire Prevention Tips";
+    } else if (firstResponse.toLowerCase().includes('kitchen')) {
+      title = "Kitchen Fire Safety";
+    } else if (firstResponse.toLowerCase().includes('cooking')) {
+      title = "Cooking Fire Safety";
+    } else if (firstResponse.toLowerCase().includes('heater')) {
+      title = "Space Heater Safety";
+    } else if (firstResponse.toLowerCase().includes('candle')) {
+      title = "Candle Fire Safety";
+    } else if (firstResponse.toLowerCase().includes('escape')) {
+      title = "Fire Escape Planning";
+    } else {
+      // Try to extract a meaningful title from the response
+      const words = firstResponse.toLowerCase().split(' ');
+      const fireKeywords = ['fire', 'safety', 'prevention', 'emergency', 'evacuation', 'extinguisher', 'smoke', 'alarm'];
+      const foundKeywords = words.filter(word => fireKeywords.includes(word));
+      
+      if (foundKeywords.length > 0) {
+        title = `${foundKeywords[0].charAt(0).toUpperCase() + foundKeywords[0].slice(1)} Safety`;
+      }
     }
     
     console.log('✅ Generated title:', title);
@@ -125,6 +138,7 @@ export async function generateSessionTitle(conversationHistory = []) {
     
   } catch (error) {
     console.error('🚨 Title Generation Error:', error.message);
+    console.error('Error stack:', error.stack);
     return "Fire Safety Discussion";
   }
 }
