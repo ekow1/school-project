@@ -17,6 +17,25 @@ sudo apt update -y && sudo apt upgrade -y
 # === 2. Install Dependencies ===
 sudo apt install -y curl debian-keyring debian-archive-keyring apt-transport-https gnupg
 
+# === 2.5. Install Node.js ===
+echo "📦 Installing Node.js..."
+if ! command -v node &> /dev/null; then
+    # Install Node.js 18.x
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt install -y nodejs
+    echo "✅ Node.js $(node --version) installed successfully"
+else
+    echo "✅ Node.js $(node --version) is already installed"
+fi
+
+# Verify npm is available
+if ! command -v npm &> /dev/null; then
+    echo "❌ npm not found, installing..."
+    sudo apt install -y npm
+else
+    echo "✅ npm $(npm --version) is available"
+fi
+
 # === 3. Add and Install Caddy ===
 echo "🌐 Installing Caddy..."
 sudo rm -f /usr/share/keyrings/caddy-stable.gpg

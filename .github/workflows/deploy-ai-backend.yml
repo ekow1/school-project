@@ -133,6 +133,12 @@ jobs:
           chmod +x install-caddy.sh
           ./install-caddy.sh
           
+          # Verify Node.js and npm are installed
+          echo "🔍 Verifying Node.js installation..."
+          node --version || { echo "❌ Node.js not found"; exit 1; }
+          npm --version || { echo "❌ npm not found"; exit 1; }
+          echo "✅ Node.js and npm are available"
+          
           # Create app directory and set permissions
           sudo mkdir -p /opt/ai-backend
           sudo chown -R ${{ secrets.AI_BACKEND_USER }}:${{ secrets.AI_BACKEND_USER }} /opt/ai-backend
