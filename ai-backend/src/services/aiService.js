@@ -16,6 +16,42 @@ const model = new ChatOpenAI({
   maxTokens: 1000,
 });
 
+// Clean AI response by removing unwanted symbols and formatting artifacts
+function cleanAIResponse(response) {
+  if (!response || typeof response !== 'string') {
+    return response;
+  }
+  
+  // Remove common AI model artifacts
+  let cleaned = response
+    // Remove <s> and </s> tags
+    .replace(/<s>/g, '')
+    .replace(/<\/s>/g, '')
+    .replace(/\[s\]/g, '')
+    .replace(/\[\/s\]/g, '')
+    // Remove [INST] and [/INST] tags
+    .replace(/\[INST\]/g, '')
+    .replace(/\[\/INST\]/g, '')
+    // Remove [B_INST] and [E_INST] tags
+    .replace(/\[B_INST\]/g, '')
+    .replace(/\[E_INST\]/g, '')
+    // Remove other common artifacts
+    .replace(/<|im_start>/g, '')
+    .replace(/<|im_end>/g, '')
+    .replace(/<|endoftext|>/g, '')
+    // Remove multiple spaces and normalize whitespace
+    .replace(/\s+/g, ' ')
+    // Trim whitespace
+    .trim();
+  
+  // If the response is empty or too short after cleaning, return a fallback
+  if (cleaned.length < 10) {
+    return "I apologize, but I'm having trouble processing your request right now. Please try again. If the problem persists, please rephrase your question about fire safety.";
+  }
+  
+  return cleaned;
+}
+
 export async function getLLMResponse(inputText, conversationHistory = []) {
   try {
     // Debug: Log the conversation history
@@ -55,12 +91,17 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     console.log('🔍 AI Response received:', !!response);
     console.log('🔍 Response text length:', response?.text?.length || 0);
     
-    // Ensure we have a valid response
-    if (!response.text || response.text.trim() === '') {
-      throw new Error('Empty response from AI service');
-    }
-    
-    return response.text;
+        // Ensure we have a valid response
+        if (!response.text || response.text.trim() === '') {
+          throw new Error('Empty response from AI service');
+        }
+        
+        // Clean the response to remove unwanted symbols and artifacts
+        const cleanedResponse = cleanAIResponse(response.text);
+        console.log('🔍 Original response length:', response.text.length);
+        console.log('🔍 Cleaned response length:', cleanedResponse.length);
+        
+        return cleanedResponse;
   } catch (error) {
     console.error('🚨 LLM Error Details:');
     console.error('Error message:', error.message);
