@@ -16,6 +16,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Prepare Caddy installer
+      run: |
+        cd ai-backend
+        chmod +x install-caddy.sh
+        tar -czf install-caddy.tar.gz install-caddy.sh
+
     - name: Upload Caddy installation script
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -23,9 +29,9 @@ jobs:
         username: ${{ secrets.AI_BACKEND_USER }}
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
-        source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
-        
+        source: "ai-backend/install-caddy.tar.gz"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+
     - name: Run Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -35,55 +41,21 @@ jobs:
         port: 22
         script: |
           cd ~
-          echo "🔍 Looking for install-caddy.sh..."
-          ls -la
+          echo "📦 Extracting install-caddy.tar.gz..."
+          tar -xzf install-caddy.tar.gz
+          rm install-caddy.tar.gz
           
-          if [ ! -f install-caddy.sh ]; then
-            echo "❌ install-caddy.sh not found in $(pwd)"
-            echo "📁 Contents of current directory:"
-            ls -la
-            echo "📁 Contents of ai-backend directory:"
-            ls -la ai-backend/ || echo "ai-backend directory not found"
-            exit 1
-          fi
-
-          echo "✅ Found install-caddy.sh, making executable..."
+          echo "🔧 Making install-caddy.sh executable..."
           chmod +x install-caddy.sh
+          
+          echo "🚀 Running install-caddy.sh..."
           ./install-caddy.sh
-
-          echo "📦 Installing Node.js and PM2..."
-          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-          sudo apt install -y nodejs
-          sudo npm install -g pm2
-
-          echo "🔍 Verifying installations..."
-          node --version
-          npm --version
-          pm2 --version
 
           # Create app directory
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
 
-          echo "✅ Environment ready for deployment"
-          
-    - name: Verify server setup
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.AI_BACKEND_HOST }}
-        username: ${{ secrets.AI_BACKEND_USER }}
-        key: ${{ secrets.SP_SSH_KEY }}
-        port: 22
-        script: |
-          echo "🔍 Final verification..."
-          echo "Node.js: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "PM2: $(pm2 --version)"
-          echo "Caddy: $(sudo systemctl is-active caddy)"
-          echo "Directories:"
-          ls -la /opt/ai-backend
-          ls -la /var/log/pm2
-          echo "✅ Server setup completed successfully!"
+          echo "✅ Server environment setup completed"
 
   deploy-app:
     name: Deploy AI Backend Application
@@ -187,22 +159,6 @@ jobs:
         # Create tar archive
         tar -czf ai-backend.tar.gz -C deploy .
         
-    - name: Verify server environment
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.AI_BACKEND_HOST }}
-        username: ${{ secrets.AI_BACKEND_USER }}
-        key: ${{ secrets.SP_SSH_KEY }}
-        port: 22
-        script: |
-          echo "🔍 Verifying server environment..."
-          echo "Node.js: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "PM2: $(pm2 --version)"
-          echo "Caddy: $(sudo systemctl is-active caddy)"
-          echo "App directory: $(ls -la /opt/ai-backend)"
-          echo "✅ Server environment ready"
-          
     - name: Upload and deploy application
       uses: appleboy/scp-action@v0.1.7
       with:
