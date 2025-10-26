@@ -352,13 +352,18 @@ $DOMAIN {
         not path /api/*
     }
     
-    # Route API requests to backend
+    # Route API requests and docs to backend
     handle @backend {
         reverse_proxy localhost:$BACKEND_PORT {
             health_uri /api/health
             health_interval 10s
             health_timeout 5s
         }
+    }
+    
+    # Route Swagger docs to backend
+    handle /api-docs* {
+        reverse_proxy localhost:$BACKEND_PORT
     }
     
     # Serve status page for other routes
