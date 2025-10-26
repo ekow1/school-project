@@ -35,18 +35,7 @@ jobs:
           exit 1
         fi
 
-    - name: Upload Caddy installation script
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.AI_BACKEND_HOST }}
-        username: ${{ secrets.AI_BACKEND_USER }}
-        key: ${{ secrets.SP_SSH_KEY }}
-        port: 22
-        source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
-        strip_components: 1
-
-    - name: Run Caddy installation script
+    - name: Create and upload Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -54,11 +43,55 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
+          # Create install-caddy.sh script directly on server
+          cat > ~/install-caddy.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          echo "🚀 Starting Caddy and Node.js installation..."
+          
+          # Update system
+          echo "📦 Updating system packages..."
+          sudo apt update -y
+          
+          # Install prerequisites
+          echo "🔧 Installing prerequisites..."
+          sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
+          
+          # Install Caddy
+          echo "🌐 Installing Caddy..."
+          sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+          sudo apt update -y
+          sudo apt install -y caddy
+          
+          # Install Node.js 22.21.0 LTS
+          echo "📦 Installing Node.js 22.21.0 LTS..."
+          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+          sudo apt install -y nodejs
+          
+          # Install PM2
+          echo "⚡ Installing PM2..."
+          sudo npm install -g pm2
+          
+          # Verify installations
+          echo "✅ Installation complete!"
+          echo "Node.js: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "PM2: $(pm2 --version)"
+          echo "Caddy: $(caddy version)"
+          EOF
+          
+          # Make script executable and run it
           chmod +x ~/install-caddy.sh
           ~/install-caddy.sh
+          
           # Create app directory and PM2 log folder
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
+          
+          echo "✅ Server environment setup completed"
 
   deploy-app:
     name: Deploy AI Backend Application
