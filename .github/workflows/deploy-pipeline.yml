@@ -45,20 +45,6 @@ jobs:
         source: "ai-backend/install-caddy.sh"
         target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
 
-    - name: Verify upload
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.AI_BACKEND_HOST }}
-        username: ${{ secrets.AI_BACKEND_USER }}
-        key: ${{ secrets.SP_SSH_KEY }}
-        port: 22
-        script: |
-          cd ~
-          echo "🔍 Checking upload location..."
-          ls -la install-caddy.sh
-          echo "📁 Home directory contents:"
-          ls -la
-
     - name: Run Caddy installation
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -67,29 +53,30 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          cd ~
-          echo "🔍 Checking current directory contents..."
-          ls -la
-          echo "🔍 Looking for install-caddy.sh..."
-          find . -name "install-caddy.sh" -type f
+          #!/bin/bash
+          set -e
           
-          if [ -f install-caddy.sh ]; then
-            echo "✅ Found install-caddy.sh, making executable..."
-            chmod +x install-caddy.sh
-            echo "🚀 Running install-caddy.sh..."
-            ./install-caddy.sh
+          # Path to the Caddy installation script
+          SCRIPT_PATH=./install-caddy.sh
+          
+          # Check if the script exists
+          if [ -f "$SCRIPT_PATH" ]; then
+              echo "✅ Found install-caddy.sh, making executable..."
+              chmod +x "$SCRIPT_PATH"
+              echo "🚀 Running install-caddy.sh..."
+              "$SCRIPT_PATH"
           else
-            echo "❌ install-caddy.sh not found in home directory"
-            echo "📁 Current directory: $(pwd)"
-            echo "📁 Directory contents:"
-            ls -la
-            exit 1
+              echo "❌ install-caddy.sh not found at $SCRIPT_PATH"
+              echo "📁 Current directory: $(pwd)"
+              echo "📁 Directory contents:"
+              ls -la
+              exit 1
           fi
           
-          # Create app directory
+          # Create app directory and PM2 logs
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
-
+          
           echo "✅ Server environment setup completed"
 
   deploy-app:
