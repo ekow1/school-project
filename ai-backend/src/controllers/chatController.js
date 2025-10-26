@@ -41,20 +41,32 @@ export const addMessage = async (req, res) => {
     if (!text) return res.status(400).json({ error: 'Text is required' });
     const session = await Session.findById(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    const aiText = await getLLMResponse(text);
+    
+    // Pass conversation history to AI service
+    const conversationHistory = session.messages || [];
+    const aiText = await getLLMResponse(text, conversationHistory);
+    
     const messageObj = {
       id: uuidv4(),
       prompt: text,
       response: aiText,
       timestamp: new Date(),
     };
+    
     session.messages.push(messageObj);
     session.lastMessage = aiText;
     session.timestamp = new Date();
     await session.save();
+    
+    // Sort messages by timestamp to ensure proper order
+    const sortedMessages = session.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
     res.json({
       message: messageObj,
-      updatedSession: session,
+      updatedSession: {
+        ...session.toObject(),
+        messages: sortedMessages
+      },
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to add message' });
@@ -79,13 +91,17 @@ export const getSessionById = async (req, res) => {
     const { sessionId } = req.params;
     const session = await Session.findById(sessionId);
     if (!session) return res.status(404).json({ error: 'Session not found' });
-    // Map messages to exclude _id and __v, and use new format
-    const messages = (session.messages || []).map(msg => ({
-      id: msg.id,
-      prompt: msg.prompt,
-      response: msg.response,
-      timestamp: msg.timestamp,
-    }));
+    
+    // Map messages to exclude _id and __v, and sort by timestamp
+    const messages = (session.messages || [])
+      .map(msg => ({
+        id: msg.id,
+        prompt: msg.prompt,
+        response: msg.response,
+        timestamp: msg.timestamp,
+      }))
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
     res.json({
       id: session._id,
       title: session.title,

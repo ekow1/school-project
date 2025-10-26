@@ -14,11 +14,23 @@ const model = new ChatOpenAI({
   modelName: "mistralai/mistral-7b-instruct",
 });
 
-export async function getLLMResponse(inputText) {
+export async function getLLMResponse(inputText, conversationHistory = []) {
   try {
+    // Create conversation context
+    let contextPrompt = `You are a helpful fire safety assistant. You provide expert advice on fire prevention, safety procedures, and emergency response.`;
+    
+    if (conversationHistory.length > 0) {
+      contextPrompt += `\n\nPrevious conversation:\n`;
+      conversationHistory.forEach(msg => {
+        contextPrompt += `Human: ${msg.prompt}\nAssistant: ${msg.response}\n\n`;
+      });
+    }
+    
+    contextPrompt += `\nCurrent question: ${inputText}`;
+    
     const prompt = PromptTemplate.fromTemplate("{input}");
     const chain = new LLMChain({ llm: model, prompt });
-    const response = await chain.call({ input: inputText });
+    const response = await chain.call({ input: contextPrompt });
     return response.text;
   } catch (error) {
     console.error('LLM Error:', error);
