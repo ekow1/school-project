@@ -12,6 +12,8 @@ const model = new ChatOpenAI({
     baseURL: "https://openrouter.ai/api/v1",
   },
   modelName: "mistralai/mistral-7b-instruct",
+  temperature: 0.7,
+  maxTokens: 1000,
 });
 
 export async function getLLMResponse(inputText, conversationHistory = []) {
@@ -29,19 +31,19 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     });
     
     // Create conversation context
-    let contextPrompt = `You are a helpful fire safety assistant. You provide expert advice on fire prevention, safety procedures, and emergency response.`;
+    let contextPrompt = `You are a helpful fire safety assistant. You provide expert advice on fire prevention, safety procedures, and emergency response. Always stay focused on fire safety topics and provide practical, actionable advice.\n\n`;
     
     if (conversationHistory.length > 0) {
-      contextPrompt += `\n\nPrevious conversation:\n`;
+      contextPrompt += `Previous conversation:\n`;
       conversationHistory.forEach(msg => {
-        // Only include messages with actual responses (not empty ones)
-        if (msg.response && msg.response.trim() !== '') {
+        // Only include messages with actual responses (not empty ones or error messages)
+        if (msg.response && msg.response.trim() !== '' && !msg.response.includes('trouble processing')) {
           contextPrompt += `Human: ${msg.prompt}\nAssistant: ${msg.response}\n\n`;
         }
       });
     }
     
-    contextPrompt += `\nCurrent question: ${inputText}`;
+    contextPrompt += `Current question: ${inputText}\n\nPlease provide a helpful fire safety response:`;
     
     console.log('🔍 Final Context Prompt Length:', contextPrompt.length);
     console.log('🔍 Context Preview:', contextPrompt.substring(0, 200) + '...');
