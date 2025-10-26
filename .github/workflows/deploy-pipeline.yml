@@ -27,15 +27,22 @@ jobs:
         echo "🔍 Checking if install-caddy.sh exists..."
         if [ -f "ai-backend/install-caddy.sh" ]; then
           echo "✅ install-caddy.sh found"
-          ls -la ai-backend/install-caddy.sh
         else
           echo "❌ install-caddy.sh not found"
-          echo "📁 Available files in ai-backend/:"
-          find ai-backend/ -type f -name "*.sh" || echo "No .sh files found"
           exit 1
         fi
 
-    - name: Create and upload Caddy installation script
+    - name: Upload and run Caddy installation script
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AI_BACKEND_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        source: "ai-backend/install-caddy.sh"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
+
+    - name: Run server setup script
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -43,55 +50,12 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          # Create install-caddy.sh script directly on server
-          cat > ~/install-caddy.sh << 'EOF'
-          #!/bin/bash
-          set -e
-          
-          echo "🚀 Starting Caddy and Node.js installation..."
-          
-          # Update system
-          echo "📦 Updating system packages..."
-          sudo apt update -y
-          
-          # Install prerequisites
-          echo "🔧 Installing prerequisites..."
-          sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
-          
-          # Install Caddy
-          echo "🌐 Installing Caddy..."
-          sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-          sudo apt update -y
-          sudo apt install -y caddy
-          
-          # Install Node.js 22.21.0 LTS
-          echo "📦 Installing Node.js 22.21.0 LTS..."
-          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-          sudo apt install -y nodejs
-          
-          # Install PM2
-          echo "⚡ Installing PM2..."
-          sudo npm install -g pm2
-          
-          # Verify installations
-          echo "✅ Installation complete!"
-          echo "Node.js: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "PM2: $(pm2 --version)"
-          echo "Caddy: $(caddy version)"
-          EOF
-          
-          # Make script executable and run it
           chmod +x ~/install-caddy.sh
           ~/install-caddy.sh
-          
-          # Create app directory and PM2 log folder
-          sudo mkdir -p /opt/ai-backend /var/log/pm2
-          sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
-          
-          echo "✅ Server environment setup completed"
+
+          # Create app folder
+          sudo mkdir -p /opt/ai-backend /var/log/ai-backend
+          sudo chown -R $USER:$USER /opt/ai-backend /var/log/ai-backend
 
   deploy-app:
     name: Deploy AI Backend Application
@@ -101,101 +65,29 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22.21.0'
-        cache: 'npm'
-        cache-dependency-path: 'ai-backend/package-lock.json'
-        
-    - name: Install dependencies
+
+    - name: Install dependencies locally
       run: |
         cd ai-backend
         npm ci
-        
-    - name: Run tests (if any)
-      run: |
-        cd ai-backend
-        npm test || echo "No tests found, continuing..."
-      
+
     - name: Create deployment package
       run: |
-        # Create deployment directory
         mkdir -p deploy
-        
-        # Copy necessary files from ai-backend folder
         cp -r ai-backend/src deploy/
         cp ai-backend/package*.json deploy/
-        
-        # Create production ecosystem file
-        cat > deploy/ecosystem.config.js << 'EOF'
-        module.exports = {
-          apps: [{
-            name: 'ai-backend',
-            script: 'src/server.js',
-            instances: 1,
-            autorestart: true,
-            watch: false,
-            max_memory_restart: '1G',
-            env: {
-              NODE_ENV: 'production',
-              PORT: 5000,
-              MONGODB_URI: process.env.MONGODB_URI,
-              OPEN_ROUTER: process.env.OPEN_ROUTER
-            },
-            error_file: '/var/log/pm2/ai-backend-error.log',
-            out_file: '/var/log/pm2/ai-backend-out.log',
-            log_file: '/var/log/pm2/ai-backend.log'
-          }]
-        };
-        EOF
-        
-        # Create .env file for production
+
+        # Create .env file
         cat > deploy/.env << EOF
         MONGODB_URI=${{ secrets.MONGODB_URI }}
         OPEN_ROUTER=${{ secrets.OPEN_ROUTER }}
         PORT=5000
         NODE_ENV=production
         EOF
-        
-        # Create deployment script
-        cat > deploy/deploy.sh << 'EOF'
-        #!/bin/bash
-        set -e
-        
-        echo "🚀 Starting backend deployment..."
-        
-        # Install dependencies
-        echo "📦 Installing dependencies..."
-        npm ci --production
-        
-        # Stop existing PM2 process if running
-        echo "🔄 Stopping existing process..."
-        pm2 stop ai-backend 2>/dev/null || true
-        pm2 delete ai-backend 2>/dev/null || true
-        
-        # Start the application
-        echo "▶️ Starting application..."
-        pm2 start ecosystem.config.js
-        
-        # Save PM2 configuration
-        pm2 save
-        
-        # Show status
-        pm2 status
-        
-        echo "✅ Backend deployment completed!"
-        echo "🌍 Your API is available at: https://ai.ekowlabs.space/api/"
-        echo "📊 Status page: https://ai.ekowlabs.space"
-        EOF
-        
-        chmod +x deploy/deploy.sh
-        
-        # Create tar archive
+
         tar -czf ai-backend.tar.gz -C deploy .
-        
-    - name: Upload and deploy application
+
+    - name: Upload deployment package
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -204,8 +96,8 @@ jobs:
         port: 22
         source: "ai-backend.tar.gz"
         target: "/opt/ai-backend/"
-        
-    - name: Extract and start application
+
+    - name: Extract and configure systemd service
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.AI_BACKEND_HOST }}
@@ -214,16 +106,37 @@ jobs:
         port: 22
         script: |
           cd /opt/ai-backend
-          
-          # Extract files
-          echo "📦 Extracting deployment package..."
           tar -xzf ai-backend.tar.gz
           rm ai-backend.tar.gz
-          
-          # Run deployment script
-          echo "🚀 Starting application deployment..."
-          ./deploy.sh
-          
+
+          # Create systemd service
+          cat | sudo tee /etc/systemd/system/ai-backend.service << 'EOF'
+          [Unit]
+          Description=AI Backend Node.js Server
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/bin/node /opt/ai-backend/src/server.js
+          Restart=always
+          User=${{ secrets.AI_BACKEND_USER }}
+          Environment=NODE_ENV=production
+          Environment=PORT=5000
+          Environment=MONGODB_URI=${{ secrets.MONGODB_URI }}
+          Environment=OPEN_ROUTER=${{ secrets.OPEN_ROUTER }}
+          WorkingDirectory=/opt/ai-backend
+          StandardOutput=file:/var/log/ai-backend/out.log
+          StandardError=file:/var/log/ai-backend/error.log
+
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+
+          # Enable and start service
+          sudo systemctl daemon-reload
+          sudo systemctl enable ai-backend
+          sudo systemctl restart ai-backend
+          sudo systemctl status ai-backend --no-pager
+
     - name: Health check
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -232,34 +145,16 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          # Wait a moment for the app to start
           sleep 10
-          
-          # Check if PM2 process is running
-          if pm2 list | grep -q "ai-backend.*online"; then
+          if systemctl is-active --quiet ai-backend; then
             echo "✅ Application is running successfully!"
-            pm2 status
           else
             echo "❌ Application failed to start"
-            pm2 logs ai-backend --lines 50
+            sudo journalctl -u ai-backend --no-pager -n 50
             exit 1
           fi
-          
-          # Test API endpoint
-          echo "🔍 Testing API endpoint..."
           if curl -f -s http://localhost:5000/ > /dev/null; then
             echo "✅ API is responding"
           else
-            echo "⚠️ API not responding yet (this is normal if backend is still starting)"
+            echo "⚠️ API not responding yet"
           fi
-          
-    - name: Notify deployment status
-      if: always()
-      run: |
-        if [ "${{ job.status }}" == "success" ]; then
-          echo "🎉 Deployment successful!"
-          echo "🌍 Your API is available at: https://ai.ekowlabs.space/api/"
-          echo "📊 Status page: https://ai.ekowlabs.space"
-        else
-          echo "❌ Deployment failed!"
-        fi
