@@ -130,6 +130,6 @@ router.put('/chat/:sessionId/title', updateSessionTitle);
  *       500:
  *         description: Failed to regenerate response
  */
-router.put('/chat/:sessionId/message/:messageId/regenerate', regenerateMessageResponse);
+router.put('/chat/:sessionId/regenerate/:messageId', regenerateMessageResponse);
 
 export default router; 
