@@ -1,5 +1,5 @@
 import express from 'express';
-import { createSession, addMessage, getSessions, getSessionById, updateSessionTitle } from '../controllers/chatController.js';
+import { createSession, addMessage, getSessions, getSessionById, updateSessionTitle, regenerateMessageResponse } from '../controllers/chatController.js';
 
 const router = express.Router();
 
@@ -105,5 +105,31 @@ router.get('/chat/:sessionId', getSessionById);
  *         description: Session not found
  */
 router.put('/chat/:sessionId/title', updateSessionTitle);
+
+/**
+ * @swagger
+ * /chat/{sessionId}/message/{messageId}/regenerate:
+ *   put:
+ *     summary: Regenerate AI response for a specific message
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Message response regenerated successfully
+ *       404:
+ *         description: Session or message not found
+ *       500:
+ *         description: Failed to regenerate response
+ */
+router.put('/chat/:sessionId/message/:messageId/regenerate', regenerateMessageResponse);
 
 export default router; 

@@ -154,4 +154,65 @@ export const updateSessionTitle = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to update session title' });
   }
+};
+
+// Regenerate response for a specific message
+export const regenerateMessageResponse = async (req, res) => {
+  try {
+    const { sessionId, messageId } = req.params;
+    
+    // Find the session
+    const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    
+    // Find the specific message
+    const messageIndex = session.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return res.status(404).json({ error: 'Message not found' });
+    
+    const message = session.messages[messageIndex];
+    
+    // Get conversation history up to this point (excluding the current message)
+    const conversationHistory = session.messages.slice(0, messageIndex);
+    
+    console.log('🔄 Regenerating response for message:', messageId);
+    console.log('📊 Conversation history length:', conversationHistory.length);
+    
+    // Generate new AI response using the same prompt but with conversation context
+    const newResponse = await getLLMResponse(message.prompt, conversationHistory);
+    
+    // Update the message with new response and timestamp
+    session.messages[messageIndex].response = newResponse;
+    session.messages[messageIndex].timestamp = new Date();
+    
+    // Update session's last message if this was the last message
+    if (messageIndex === session.messages.length - 1) {
+      session.lastMessage = newResponse;
+    }
+    
+    // Update session timestamp
+    session.timestamp = new Date();
+    
+    // Regenerate session title based on updated conversation
+    const updatedTitle = await generateSessionTitle(session.messages);
+    session.title = updatedTitle;
+    
+    await session.save();
+    
+    // Sort messages by timestamp to ensure proper order
+    const sortedMessages = session.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    res.json({
+      message: session.messages[messageIndex],
+      updatedSession: {
+        ...session.toObject(),
+        messages: sortedMessages
+      },
+      messageId: messageId,
+      regenerated: true
+    });
+    
+  } catch (err) {
+    console.error('🚨 Regenerate Error:', err);
+    res.status(500).json({ error: 'Failed to regenerate message response' });
+  }
 }; 
