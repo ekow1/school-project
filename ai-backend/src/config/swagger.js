@@ -10,7 +10,12 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:8000/api',
+        url: 'https://ai.ekowlabs.space/api',
+        description: 'Production server',
+      },
+      {
+        url: 'http://localhost:5000/api',
+        description: 'Local development server',
       },
     ],
   },
