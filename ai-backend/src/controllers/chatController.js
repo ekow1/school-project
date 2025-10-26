@@ -1,5 +1,5 @@
 import Session from '../models/Session.js';
-import { getLLMResponse } from '../services/aiService.js';
+import { getLLMResponse, generateSessionTitle } from '../services/aiService.js';
 import { v4 as uuidv4 } from 'uuid';
 
 // Create new session with first message
@@ -15,8 +15,11 @@ export const createSession = async (req, res) => {
       response: aiText,
       timestamp: new Date(),
     };
+    // Generate contextual title based on the AI response
+    const contextualTitle = await generateSessionTitle([messageObj]);
+    
     const session = await Session.create({
-      title: text,
+      title: contextualTitle,
       lastMessage: aiText,
       messages: [messageObj],
       timestamp: new Date(),
@@ -68,6 +71,11 @@ export const addMessage = async (req, res) => {
     session.messages.push(messageObj);
     session.lastMessage = aiText;
     session.timestamp = new Date();
+    
+    // Update session title based on full conversation context
+    const updatedTitle = await generateSessionTitle(session.messages);
+    session.title = updatedTitle;
+    
     await session.save();
     
     // Sort messages by timestamp to ensure proper order
@@ -123,5 +131,27 @@ export const getSessionById = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch session' });
+  }
+};
+
+// Update session title based on conversation context
+export const updateSessionTitle = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    
+    // Generate new title based on all messages
+    const newTitle = await generateSessionTitle(session.messages);
+    session.title = newTitle;
+    await session.save();
+    
+    res.json({
+      sessionId: session._id,
+      title: session.title,
+      message: 'Session title updated successfully'
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update session title' });
   }
 }; 

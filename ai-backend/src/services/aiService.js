@@ -73,3 +73,58 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     return `I apologize, but I'm having trouble processing your request right now. Please try again. If the problem persists, please rephrase your question about fire safety.`;
   }
 }
+
+// Generate contextual session title based on conversation content
+export async function generateSessionTitle(conversationHistory = []) {
+  try {
+    // Filter out error messages and empty responses
+    const validMessages = conversationHistory.filter(msg => 
+      msg.response && 
+      msg.response.trim() !== '' && 
+      !msg.response.includes('trouble processing') &&
+      !msg.response.includes('tools needed')
+    );
+
+    if (validMessages.length === 0) {
+      return "Fire Safety Discussion";
+    }
+
+    // Create context for title generation
+    let contextPrompt = `Based on this fire safety conversation, generate a concise, descriptive title (max 50 characters) that captures the main fire safety topic discussed. Focus on the fire safety advice given, not the questions asked.\n\nConversation:\n`;
+    
+    validMessages.forEach(msg => {
+      contextPrompt += `Q: ${msg.prompt}\nA: ${msg.response}\n\n`;
+    });
+    
+    contextPrompt += `Generate a title that summarizes the fire safety topic covered in this conversation:`;
+
+    console.log('🔍 Generating session title...');
+    console.log('📊 Valid messages for title:', validMessages.length);
+    
+    const prompt = PromptTemplate.fromTemplate("{input}");
+    const chain = new LLMChain({ llm: model, prompt });
+    const response = await chain.call({ input: contextPrompt });
+    
+    if (!response.text || response.text.trim() === '') {
+      return "Fire Safety Discussion";
+    }
+    
+    // Clean up the response to get just the title
+    let title = response.text.trim();
+    
+    // Remove quotes if present
+    title = title.replace(/^["']|["']$/g, '');
+    
+    // Limit to 50 characters
+    if (title.length > 50) {
+      title = title.substring(0, 47) + '...';
+    }
+    
+    console.log('✅ Generated title:', title);
+    return title;
+    
+  } catch (error) {
+    console.error('🚨 Title Generation Error:', error.message);
+    return "Fire Safety Discussion";
+  }
+}

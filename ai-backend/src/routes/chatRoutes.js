@@ -1,5 +1,5 @@
 import express from 'express';
-import { createSession, addMessage, getSessions, getSessionById } from '../controllers/chatController.js';
+import { createSession, addMessage, getSessions, getSessionById, updateSessionTitle } from '../controllers/chatController.js';
 
 const router = express.Router();
 
@@ -86,5 +86,24 @@ router.get('/chat', getSessions);
  *         description: Session not found
  */
 router.get('/chat/:sessionId', getSessionById);
+
+/**
+ * @swagger
+ * /chat/{sessionId}/title:
+ *   put:
+ *     summary: Update session title based on conversation context
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Session title updated
+ *       404:
+ *         description: Session not found
+ */
+router.put('/chat/:sessionId/title', updateSessionTitle);
 
 export default router; 
