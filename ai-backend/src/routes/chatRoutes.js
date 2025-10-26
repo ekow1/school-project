@@ -588,41 +588,6 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
  *                 message:
  *                   type: string
  *                   example: "Prompt updated and AI response regenerated successfully"
- *                 data:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                         prompt:
- *                           type: string
- *                         response:
- *                           type: string
- *                         timestamp:
- *                           type: string
- *                           format: date-time
- *                         likes:
- *                           type: number
- *                           default: 0
- *                         dislikes:
- *                           type: number
- *                           default: 0
- *                         userFeedback:
- *                           type: string
- *                           enum: [like, dislike, null]
- *                           default: null
- *                     updatedSession:
- *                       type: object
- *                     messageId:
- *                       type: string
- *                     promptUpdated:
- *                       type: boolean
- *                     oldPrompt:
- *                       type: string
- *                     newPrompt:
- *                       type: string
  *       400:
  *         description: Bad request - newPrompt is required
  *       404:
@@ -674,41 +639,6 @@ router.post('/chat/:sessionId/message/:messageId/like', likeMessage);
  *                 message:
  *                   type: string
  *                   example: "Prompt updated and AI response regenerated successfully"
- *                 data:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                         prompt:
- *                           type: string
- *                         response:
- *                           type: string
- *                         timestamp:
- *                           type: string
- *                           format: date-time
- *                         likes:
- *                           type: number
- *                           default: 0
- *                         dislikes:
- *                           type: number
- *                           default: 0
- *                         userFeedback:
- *                           type: string
- *                           enum: [like, dislike, null]
- *                           default: null
- *                     updatedSession:
- *                       type: object
- *                     messageId:
- *                       type: string
- *                     promptUpdated:
- *                       type: boolean
- *                     oldPrompt:
- *                       type: string
- *                     newPrompt:
- *                       type: string
  *       400:
  *         description: Bad request - newPrompt is required
  *       404:

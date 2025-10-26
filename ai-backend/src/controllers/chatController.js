@@ -361,18 +361,7 @@ export const updatePrompt = async (req, res) => {
     
     res.json({
       success: true,
-      message: "Prompt updated and AI response regenerated successfully",
-      data: {
-        message: session.messages[messageIndex],
-        updatedSession: {
-          ...session.toObject(),
-          messages: sortedMessages
-        },
-        messageId: messageId,
-        promptUpdated: true,
-        oldPrompt: message.prompt,
-        newPrompt: newPrompt
-      }
+      message: "Prompt updated and AI response regenerated successfully"
     });
     
   } catch (err) {
