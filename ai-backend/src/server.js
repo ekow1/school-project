@@ -24,6 +24,15 @@ app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
+// Health check endpoint for monitoring
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 app.use('/api', chatRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
