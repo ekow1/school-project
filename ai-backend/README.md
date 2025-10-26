@@ -300,18 +300,21 @@ NODE_ENV=development
 ### Automatic Deployment (GitHub Actions)
 The application automatically deploys when you push to the `main` branch:
 
-1. **GitHub Actions** builds and tests the application with Node.js 22.21.0 LTS
-2. **Server Setup** installs Node.js 22.21.0 LTS using robust NodeSource installer
-3. **PM2 Installation** - Process management for Node.js applications
-4. **Caddy Setup** - Reverse proxy with automatic HTTPS
+#### 🚀 Deployment Process
+1. **Setup Server Environment** - Installs Node.js 22.21.0 LTS, PM2, and Caddy
+2. **Build & Test** - Runs tests and builds the application
+3. **Deploy Application** - Uploads and starts the application with PM2
+4. **Health Verification** - Ensures the application is running correctly
 5. **Live deployment** at `https://ai.ekowlabs.space`
 
 #### 🔧 Enhanced Installation Process
+- **Direct file upload** - Clean upload of install-caddy.sh without directory structure
 - **Robust NodeSource installer** with error handling and logging
 - **Architecture detection** for proper package selection
 - **GPG key management** for secure package verification
 - **Prerequisites installation** (apt-transport-https, ca-certificates, etc.)
 - **Installation verification** with version checking
+- **Clean execution** - Script runs directly from home directory
 
 ### Manual Deployment
 If you need to deploy manually:
@@ -368,6 +371,9 @@ pm2 stop ai-backend
 - ✅ **Production setup** - Automated server configuration with install-caddy.sh
 - ✅ **Health monitoring** - Added comprehensive health checks
 - ✅ **Error handling** - Better error reporting and troubleshooting
+- ✅ **Fixed file upload issues** - Resolved "install-caddy.sh not found" errors
+- ✅ **Clean deployment pipeline** - Direct file upload without directory structure
+- ✅ **Simplified workflow** - Streamlined GitHub Actions for reliable deployment
 
 ## 📁 Project Structure
 ```
@@ -389,15 +395,24 @@ ai-backend/
 
 ## 🔄 CI/CD Pipeline
 
-The GitHub Actions workflow (`deploy-ai-backend.yml`) handles:
+The GitHub Actions workflow (`deploy-pipeline.yml`) handles:
 
-1. **Code checkout** and Node.js 22.21.0 LTS setup
+### Setup Server Job
+1. **Code checkout** with full repository access
+2. **Repository structure verification** - Ensures install-caddy.sh exists
+3. **Direct file upload** - Uploads install-caddy.sh directly to home directory
+4. **Script execution** - Runs install-caddy.sh to install Node.js 22.21.0 LTS, PM2, and Caddy
+5. **Directory setup** - Creates /opt/ai-backend and /var/log/pm2 directories
+
+### Deploy Application Job
+1. **Node.js 22.21.0 LTS setup** with npm caching
 2. **Dependency installation** with npm ci
 3. **Test execution** (if tests exist)
-4. **Server setup** with Node.js 22.21.0 LTS, PM2, and Caddy installation
-5. **Deployment package creation** with PM2 configuration
-6. **Server deployment** via SSH
+4. **Deployment package creation** with PM2 configuration and environment variables
+5. **Application upload** via SCP to /opt/ai-backend/
+6. **Application deployment** with PM2 process management
 7. **Health checks** and status verification
+8. **Deployment notification** with success/failure status
 
 ## 🐛 Troubleshooting
 
