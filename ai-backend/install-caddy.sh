@@ -20,8 +20,8 @@ sudo apt install -y curl debian-keyring debian-archive-keyring apt-transport-htt
 # === 2.5. Install Node.js ===
 echo "📦 Installing Node.js..."
 if ! command -v node &> /dev/null; then
-    # Install Node.js 18.x
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    # Install Node.js 22.x
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
     sudo apt install -y nodejs
     echo "✅ Node.js $(node --version) installed successfully"
 else
