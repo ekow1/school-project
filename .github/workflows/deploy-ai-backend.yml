@@ -43,7 +43,6 @@ jobs:
         # Copy necessary files from ai-backend folder
         cp -r ai-backend/src deploy/
         cp ai-backend/package*.json deploy/
-        cp ai-backend/vercel.json deploy/
         
         # Create production ecosystem file
         cat > deploy/ecosystem.config.js << 'EOF'
