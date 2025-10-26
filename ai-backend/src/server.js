@@ -40,26 +40,7 @@ app.get('/api/swagger-spec', (req, res) => {
   res.json(swaggerSpec);
 });
 
-// Test route to verify routing is working
-app.get('/api-docs-test', (req, res) => {
-  res.json({ message: 'Swagger docs route is accessible', timestamp: new Date().toISOString() });
-});
-
-// Swagger UI setup with error handling
-try {
-  console.log('Setting up Swagger UI...');
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Fire Assistant AI API Docs'
-  }));
-  console.log('Swagger UI setup complete');
-} catch (error) {
-  console.error('Error setting up Swagger UI:', error);
-  // Fallback route
-  app.get('/api-docs', (req, res) => {
-    res.status(500).json({ error: 'Swagger UI setup failed', details: error.message });
-  });
-}
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handler
 app.use((err, req, res, next) => {

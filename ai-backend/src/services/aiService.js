@@ -16,6 +16,18 @@ const model = new ChatOpenAI({
 
 export async function getLLMResponse(inputText, conversationHistory = []) {
   try {
+    // Debug: Log the conversation history
+    console.log('🔍 Conversation History Debug:');
+    console.log('📊 Total messages:', conversationHistory.length);
+    conversationHistory.forEach((msg, index) => {
+      console.log(`📝 Message ${index + 1}:`, {
+        id: msg.id,
+        prompt: msg.prompt?.substring(0, 50) + '...',
+        response: msg.response?.substring(0, 50) + '...',
+        hasResponse: !!(msg.response && msg.response.trim() !== '')
+      });
+    });
+    
     // Create conversation context
     let contextPrompt = `You are a helpful fire safety assistant. You provide expert advice on fire prevention, safety procedures, and emergency response.`;
     

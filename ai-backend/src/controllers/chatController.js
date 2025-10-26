@@ -44,6 +44,18 @@ export const addMessage = async (req, res) => {
     
     // Pass conversation history to AI service
     const conversationHistory = session.messages || [];
+    console.log('🔍 Controller Debug - Session Messages:');
+    console.log('📊 Total messages in session:', conversationHistory.length);
+    conversationHistory.forEach((msg, index) => {
+      console.log(`📝 Session Message ${index + 1}:`, {
+        id: msg.id,
+        _id: msg._id,
+        prompt: msg.prompt?.substring(0, 30) + '...',
+        response: msg.response?.substring(0, 30) + '...',
+        hasResponse: !!(msg.response && msg.response.trim() !== '')
+      });
+    });
+    
     const aiText = await getLLMResponse(text, conversationHistory);
     
     const messageObj = {
