@@ -43,7 +43,7 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "ai-backend/install-caddy.sh"
-        target: "/home/${{ secrets.AI_BACKEND_USER }}/"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-caddy.sh"
 
     - name: Run Caddy installation script
       uses: appleboy/ssh-action@v1.0.3
@@ -53,8 +53,8 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          chmod +x ~/ai-backend/install-caddy.sh
-          ~/ai-backend/install-caddy.sh
+          chmod +x ~/install-caddy.sh
+          ~/install-caddy.sh
           # Create app directory and PM2 log folder
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
