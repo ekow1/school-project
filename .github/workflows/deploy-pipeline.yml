@@ -53,8 +53,8 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          chmod +x ~/install-caddy.sh
-          ~/install-caddy.sh
+          chmod +x ~/ai-backend/install-caddy.sh
+          ~/ai-backend/install-caddy.sh
           # Create app directory and PM2 log folder
           sudo mkdir -p /opt/ai-backend /var/log/pm2
           sudo chown -R $USER:$USER /opt/ai-backend /var/log/pm2
