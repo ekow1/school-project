@@ -43,9 +43,15 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     
     contextPrompt += `\nCurrent question: ${inputText}`;
     
+    console.log('🔍 Final Context Prompt Length:', contextPrompt.length);
+    console.log('🔍 Context Preview:', contextPrompt.substring(0, 200) + '...');
+    
     const prompt = PromptTemplate.fromTemplate("{input}");
     const chain = new LLMChain({ llm: model, prompt });
+    console.log('🔍 About to call AI service...');
     const response = await chain.call({ input: contextPrompt });
+    console.log('🔍 AI Response received:', !!response);
+    console.log('🔍 Response text length:', response?.text?.length || 0);
     
     // Ensure we have a valid response
     if (!response.text || response.text.trim() === '') {
@@ -54,7 +60,13 @@ export async function getLLMResponse(inputText, conversationHistory = []) {
     
     return response.text;
   } catch (error) {
-    console.error('LLM Error:', error);
+    console.error('🚨 LLM Error Details:');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error type:', error.constructor.name);
+    console.error('Environment check - OPEN_ROUTER exists:', !!process.env.OPEN_ROUTER);
+    console.error('Environment check - OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+    
     // Return a fallback response instead of throwing
     return `I apologize, but I'm having trouble processing your request right now. Please try again. If the problem persists, please rephrase your question about fire safety.`;
   }
