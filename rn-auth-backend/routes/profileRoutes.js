@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProfile } from '../controllers/profileController.js';
+import { getProfile, updateProfile, deleteProfile } from '../controllers/profileController.js';
 
 const router = express.Router();
 
@@ -43,5 +43,127 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/', getProfile);
+
+/**
+ * @swagger
+ * /api/profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Profile]
+ *     description: Update the authenticated user's profile information
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "John Doe"
+ *               email:
+ *                 type: string
+ *                 example: "john.doe@example.com"
+ *               address:
+ *                 type: string
+ *                 example: "123 Main St, City, Country"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               dob:
+ *                 type: string
+ *                 format: date
+ *                 example: "1990-01-01"
+ *               image:
+ *                 type: string
+ *                 example: "https://example.com/images/profile.jpg"
+ *               gpsAddress:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                     example: 40.7128
+ *                   longitude:
+ *                     type: number
+ *                     example: -74.0060
+ *                   address:
+ *                     type: string
+ *                     example: "New York, NY, USA"
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Profile updated successfully"
+ *                 user:
+ *                   $ref: '#/components/schemas/UserProfile'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.put('/', updateProfile);
+
+/**
+ * @swagger
+ * /api/profile:
+ *   delete:
+ *     summary: Delete user profile
+ *     tags: [Profile]
+ *     description: Permanently delete the authenticated user's account and all associated data
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Profile deleted successfully"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.delete('/', deleteProfile);
 
 export default router;

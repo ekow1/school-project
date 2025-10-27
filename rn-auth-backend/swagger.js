@@ -252,8 +252,42 @@ Tokens are valid for 24 hours after login.
             },
             address: {
               type: 'string',
-              description: 'User address',
+              description: 'User address (optional)',
               example: '123 Main St, City, Country',
+            },
+            country: {
+              type: 'string',
+              description: 'User country (optional)',
+              example: 'USA',
+            },
+            dob: {
+              type: 'string',
+              format: 'date',
+              description: 'Date of birth (optional)',
+              example: '1990-01-01',
+            },
+            image: {
+              type: 'string',
+              description: 'Profile image URL (optional)',
+              example: 'https://example.com/images/profile.jpg',
+            },
+            gpsAddress: {
+              type: 'object',
+              description: 'GPS location (optional)',
+              properties: {
+                latitude: {
+                  type: 'number',
+                  example: 40.7128,
+                },
+                longitude: {
+                  type: 'number',
+                  example: -74.0060,
+                },
+                address: {
+                  type: 'string',
+                  example: 'New York, NY, USA',
+                },
+              },
             },
             createdAt: {
               type: 'string',

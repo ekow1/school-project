@@ -5,7 +5,18 @@ const userSchema = new mongoose.Schema({
     phone: { type: String, required: true, unique: true },
     email: { type: String, required: false },
     password: { type: String, required: true },
-    address: { type: String }
+    address: { type: String },
+    country: { type: String },
+    dob: { type: Date },
+    image: { type: String },
+    gpsAddress: { 
+        type: {
+            latitude: { type: Number },
+            longitude: { type: Number },
+            address: { type: String }
+        },
+        required: false
+    }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

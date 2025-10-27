@@ -140,8 +140,57 @@ Authorization: Bearer <your-jwt-token>
   "phone": "+1234567890",
   "email": "john@example.com",
   "address": "123 Main St",
+  "country": "USA",
+  "dob": "1990-01-01",
+  "image": "https://example.com/profile.jpg",
+  "gpsAddress": {
+    "latitude": 40.7128,
+    "longitude": -74.0060,
+    "address": "New York, NY, USA"
+  },
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### Update User Profile
+```http
+PUT /api/profile
+Authorization: Bearer <your-jwt-token>
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "country": "Canada",
+  "dob": "1992-05-15",
+  "image": "https://example.com/new-profile.jpg",
+  "gpsAddress": {
+    "latitude": 43.6532,
+    "longitude": -79.3832,
+    "address": "Toronto, ON, Canada"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Profile updated successfully",
+  "user": { /* Updated user object */ }
+}
+```
+
+#### Delete User Profile
+```http
+DELETE /api/profile
+Authorization: Bearer <your-jwt-token>
+```
+
+**Response:**
+```json
+{
+  "message": "Profile deleted successfully"
 }
 ```
 
