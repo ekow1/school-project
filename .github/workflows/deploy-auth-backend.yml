@@ -1,0 +1,323 @@
+name: Deploy Auth Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'rn-auth-backend/**'
+      - '.github/workflows/deploy-auth-backend.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  setup-server:
+    name: Setup Auth Server Environment
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Verify repository structure
+      run: |
+        echo "🔍 Repository structure:"
+        ls -la
+        echo "🔍 Auth Backend directory contents:"
+        ls -la rn-auth-backend/
+        echo "🔍 Checking if install.sh exists..."
+        if [ -f "rn-auth-backend/install.sh" ]; then
+          echo "✅ install.sh found"
+        else
+          echo "❌ install.sh not found"
+          exit 1
+        fi
+
+    - name: Check if server is already set up
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔍 Checking if server is already set up..."
+          
+          # Check if Node.js, PM2, and Caddy are installed
+          if command -v node &> /dev/null && command -v npm &> /dev/null && command -v caddy &> /dev/null; then
+            echo "✅ Server is already set up!"
+            echo "Node.js: $(node --version)"
+            echo "npm: $(npm --version)"
+            echo "Caddy: $(caddy version)"
+            
+            # Check if PM2 is installed
+            if command -v pm2 &> /dev/null; then
+              echo "✅ PM2 is installed: $(pm2 --version)"
+            fi
+            
+            # Check if directories exist
+            if [ -d "~/school-project/backend/rn-auth-backend" ]; then
+              echo "✅ Application directory already exists"
+              echo "✅ Server setup complete - skipping installation"
+              exit 0
+            else
+              echo "⚠️ Software installed but app directory missing"
+              echo "Please ensure repository is cloned at ~/school-project/"
+              exit 0
+            fi
+          else
+            echo "❌ Server not set up - proceeding with installation"
+            exit 1
+          fi
+
+    - name: Upload and run installation script
+      if: failure()
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        source: "rn-auth-backend/install.sh"
+        target: "/home/${{ secrets.AI_BACKEND_USER }}/install-auth.sh"
+
+    - name: Run server setup script
+      if: failure()
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          chmod +x ~/install-auth.sh/rn-auth-backend/install.sh
+          ~/install-auth.sh/rn-auth-backend/install.sh
+
+    - name: Update Caddy configuration
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔄 Verifying Caddy configuration for auth.ekowlabs.space..."
+          
+          # Verify Caddyfile exists and has correct configuration
+          if ! grep -q "auth.ekowlabs.space" /etc/caddy/Caddyfile; then
+            echo "⚠️ Updating Caddy configuration..."
+            
+            sudo tee /etc/caddy/Caddyfile << 'EOF'
+          auth.ekowlabs.space {
+              # Try to proxy to backend first, fallback to status page
+              @backend {
+                  path /api/*
+              }
+              
+              # Serve status page for root and non-API routes
+              @status {
+                  not path /api/*
+                  not path /api-docs*
+              }
+              
+              # Route API requests to backend
+              handle @backend {
+                  reverse_proxy localhost:5000 {
+                      health_uri /api/health
+                      health_interval 10s
+                      health_timeout 5s
+                  }
+              }
+              
+              # Route Swagger docs to backend
+              handle /api-docs* {
+                  reverse_proxy localhost:5000
+              }
+              
+              # Serve status page for other routes
+              handle @status {
+                  root * /var/www/status
+                  file_server
+              }
+              
+              # Enable gzip compression
+              encode gzip
+              
+              # Add security headers
+              header {
+                  # Enable HSTS
+                  Strict-Transport-Security "max-age=31536000; includeSubDomains"
+                  # Prevent clickjacking
+                  X-Frame-Options "SAMEORIGIN"
+                  # Prevent MIME type sniffing
+                  X-Content-Type-Options "nosniff"
+                  # XSS protection
+                  X-XSS-Protection "1; mode=block"
+                  # CORS headers for React Native/Expo mobile app
+                  Access-Control-Allow-Origin "*"
+                  Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+                  Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+              }
+              
+              # Log requests
+              log {
+                  output file /var/log/caddy/access.log
+              }
+              
+              # Handle preflight requests
+              @options {
+                  method OPTIONS
+              }
+              respond @options 200
+          }
+          EOF
+            
+            # Reload Caddy configuration
+            sudo systemctl reload caddy
+            echo "✅ Caddy configuration updated and reloaded"
+          else
+            echo "✅ Caddy configuration already correct"
+          fi
+
+  deploy-app:
+    name: Deploy Auth Backend Application
+    runs-on: ubuntu-latest
+    needs: setup-server
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies locally
+      run: |
+        cd rn-auth-backend
+        npm ci
+
+    - name: Create deployment package
+      run: |
+        mkdir -p deploy
+        cp -r rn-auth-backend/controllers deploy/
+        cp -r rn-auth-backend/middleware deploy/
+        cp -r rn-auth-backend/models deploy/
+        cp -r rn-auth-backend/routes deploy/
+        cp rn-auth-backend/server.js deploy/
+        cp rn-auth-backend/swagger.js deploy/
+        cp rn-auth-backend/package*.json deploy/
+        cp rn-auth-backend/ecosystem.config.cjs deploy/
+
+        # Create .env file
+        cat > deploy/.env << EOF
+        MONGODB_URI=${{ secrets.MONGODB_URI }}
+        PORT=5000
+        JWT_SECRET=$(openssl rand -base64 32)
+        NODE_ENV=production
+        EOF
+
+        # Create logs directory
+        mkdir -p deploy/logs
+
+        tar -czf auth-backend.tar.gz -C deploy .
+
+    - name: Upload deployment package
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        source: "auth-backend.tar.gz"
+        target: "~/school-project/backend/rn-auth-backend/"
+
+    - name: Extract and deploy application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          cd ~/school-project/backend/rn-auth-backend
+          
+          echo "📦 Extracting deployment package..."
+          tar -xzf auth-backend.tar.gz
+          rm auth-backend.tar.gz
+
+          echo "📦 Installing production dependencies..."
+          npm install --production
+
+          echo "🔄 Managing PM2 process..."
+          
+          # Check if PM2 process exists
+          if pm2 describe auth-backend > /dev/null 2>&1; then
+            echo "♻️ Restarting existing PM2 process..."
+            pm2 restart auth-backend
+          else
+            echo "✨ Starting new PM2 process..."
+            pm2 start ecosystem.config.cjs
+          fi
+          
+          # Save PM2 configuration
+          pm2 save
+          
+          # Setup PM2 to start on system boot (only if not already set)
+          pm2 startup systemd -u $USER --hp /home/$USER || true
+          
+          echo "✅ Deployment completed successfully!"
+          
+          # Show PM2 status
+          pm2 list
+          pm2 info auth-backend
+
+    - name: Health check
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AUTH_HOST }}
+        username: ${{ secrets.AI_BACKEND_USER }}
+        key: ${{ secrets.SP_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🔍 Waiting for application to start..."
+          sleep 10
+          
+          # Check if PM2 process is running
+          if pm2 describe auth-backend > /dev/null 2>&1; then
+            echo "✅ PM2 process is running"
+            pm2 info auth-backend --no-color
+          else
+            echo "❌ PM2 process not found"
+            exit 1
+          fi
+          
+          # Check if API is responding
+          if curl -f -s http://localhost:5000/api/health > /dev/null; then
+            echo "✅ API is responding"
+            curl -s http://localhost:5000/api/health | jq '.'
+          else
+            echo "⚠️ API not responding yet, checking logs..."
+            pm2 logs auth-backend --lines 30 --nostream
+            exit 1
+          fi
+
+    - name: Deployment Summary
+      if: always()
+      run: |
+        echo "📊 Deployment Summary"
+        echo "===================="
+        echo "🌐 Domain: https://auth.ekowlabs.space"
+        echo "📍 API Base: https://auth.ekowlabs.space/api"
+        echo "📚 API Docs: https://auth.ekowlabs.space/api-docs"
+        echo ""
+        echo "🔗 Endpoints:"
+        echo "  • POST /api/auth/register - Register new user"
+        echo "  • POST /api/auth/login - Login user"
+        echo "  • GET /api/profile - Get user profile (requires auth)"
+        echo "  • GET /api/health - Health check"
+        echo ""
+        echo "🔧 Process Management:"
+        echo "  • pm2 list - View all processes"
+        echo "  • pm2 logs auth-backend - View logs"
+        echo "  • pm2 restart auth-backend - Restart app"
+        echo "  • pm2 monit - Monitor processes"
+

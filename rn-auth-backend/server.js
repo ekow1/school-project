@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(cors(
     {
-        origin: ['http://10.0.2.2:5000',"http://192.168.117.54:5000"],
+        origin: ['*'],
         credentials: true
     }
 ));
@@ -26,6 +26,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', verifyToken, profileRoutes);
+
+// Health check endpoint for monitoring
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        message: 'Auth backend is running',
+        timestamp: new Date().toISOString()
+    });
+});
 
 app.get('/', (req, res) => {
     res.send('Sever running');

@@ -26,7 +26,7 @@ const options = {
       schemas: {
         User: {
           type: 'object',
-          required: ['name', 'phone', 'password', 'address'],
+          required: ['name', 'phone', 'password'],
           properties: {
             id: {
               type: 'string',
@@ -40,6 +40,10 @@ const options = {
               type: 'string',
               description: 'The user phone number',
             },
+            email: {
+              type: 'string',
+              description: 'The user email (optional)',
+            },
             password: {
               type: 'string',
               description: 'The user password',
@@ -52,7 +56,7 @@ const options = {
         },
         RegisterRequest: {
           type: 'object',
-          required: ['name', 'phone', 'password', 'address'],
+          required: ['name', 'phone', 'password'],
           properties: {
             name: {
               type: 'string',
@@ -61,6 +65,10 @@ const options = {
             phone: {
               type: 'string',
               example: '+1234567890',
+            },
+            email: {
+              type: 'string',
+              example: 'john.doe@example.com',
             },
             password: {
               type: 'string',
@@ -136,6 +144,11 @@ const options = {
               type: 'string',
               description: 'User phone number',
               example: '+1234567890',
+            },
+            email: {
+              type: 'string',
+              description: 'User email (optional)',
+              example: 'john.doe@example.com',
             },
             address: {
               type: 'string',
