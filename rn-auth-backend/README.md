@@ -82,6 +82,7 @@ Once the server is running, visit:
 - [VALIDATION_RULES.md](./VALIDATION_RULES.md) - Field validation rules and patterns
 - [AUTH_FLOW_EXPLANATION.md](./AUTH_FLOW_EXPLANATION.md) - How authentication and user ID extraction works
 - [PATCH_MIGRATION.md](./PATCH_MIGRATION.md) - Migration guide for PUT to PATCH change
+- [SWAGGER_UPDATE_SUMMARY.md](./SWAGGER_UPDATE_SUMMARY.md) - Swagger documentation updates
 - [CHANGELOG_GHANAPOST.md](./CHANGELOG_GHANAPOST.md) - Recent changes and migration guide
 
 ## 🔌 API Endpoints

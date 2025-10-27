@@ -54,51 +54,46 @@ router.get('/', getProfile);
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: true
+ *       required: false
+ *       description: Only provide fields you want to update. All fields are optional.
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "John Doe"
- *               phone:
- *                 type: string
- *                 description: "Phone number in international format"
- *                 example: "+233201234567"
- *               email:
- *                 type: string
- *                 example: "john.doe@example.com"
- *               address:
- *                 type: string
- *                 example: "123 Main St, City, Country"
- *               country:
- *                 type: string
- *                 example: "USA"
- *               dob:
- *                 type: string
- *                 format: date
- *                 example: "1990-01-01"
- *               image:
- *                 type: string
- *                 example: "https://example.com/images/profile.jpg"
- *               ghanaPost:
- *                 type: string
- *                 example: "GA-184-1234"
+ *             $ref: '#/components/schemas/ProfileUpdateRequest'
+ *           examples:
+ *             updateName:
+ *               summary: Update only name
+ *               value:
+ *                 name: "Jane Doe"
+ *             updatePhone:
+ *               summary: Update only phone
+ *               value:
+ *                 phone: "+233209876543"
+ *             updateMultiple:
+ *               summary: Update multiple fields
+ *               value:
+ *                 name: "Jane Doe"
+ *                 phone: "+233209876543"
+ *                 email: "jane@example.com"
+ *                 country: "Ghana"
+ *             updateAll:
+ *               summary: Update all fields
+ *               value:
+ *                 name: "Jane Doe"
+ *                 phone: "+233209876543"
+ *                 email: "jane@example.com"
+ *                 address: "123 Main St, Accra"
+ *                 country: "Ghana"
+ *                 dob: "1992-05-15"
+ *                 image: "https://example.com/avatar.jpg"
+ *                 ghanaPost: "GA-184-1234"
  *     responses:
  *       200:
  *         description: Profile updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Profile updated successfully"
- *                 user:
- *                   $ref: '#/components/schemas/UserProfile'
+ *               $ref: '#/components/schemas/ProfileUpdateResponse'
  *       400:
  *         description: Validation error or phone already in use
  *         content:

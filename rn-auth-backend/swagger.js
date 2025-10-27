@@ -6,18 +6,21 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'Auth Backend API',
-      version: '1.0.0',
+      version: '1.2.0',
       description: `
 ## Authentication Backend API
 
 A secure authentication backend API built with Node.js, Express, and MongoDB for React Native applications.
 
 ### Features
-- User registration with email (optional), phone, name, password, and address
+- User registration with optional fields (email, address, country, dob, image, ghanaPost)
 - User login with JWT token generation
 - Protected routes with JWT authentication
-- User profile management
+- User profile management (GET, PATCH, DELETE)
+- Partial profile updates using PATCH method
+- Phone number validation and uniqueness check
 - Health check endpoint
+- Ghana Post GPS address support
 
 ### Authentication
 Protected routes require a Bearer token in the Authorization header:
@@ -46,7 +49,7 @@ Tokens are valid for 24 hours after login.
       },
       {
         name: 'Profile',
-        description: 'User profile management endpoints (requires authentication)',
+        description: 'User profile management endpoints (requires authentication). Supports GET (retrieve), PATCH (partial update), and DELETE (remove) operations.',
       },
       {
         name: 'Health',
@@ -202,6 +205,27 @@ Tokens are valid for 24 hours after login.
                   description: 'User address (optional)',
                   example: '123 Main St, City, Country',
                 },
+                country: {
+                  type: 'string',
+                  description: 'User country (optional, defaults to "Ghana")',
+                  example: 'Ghana',
+                },
+                dob: {
+                  type: 'string',
+                  format: 'date',
+                  description: 'Date of birth (optional)',
+                  example: '1990-01-01',
+                },
+                image: {
+                  type: 'string',
+                  description: 'Profile image URL (optional)',
+                  example: 'https://example.com/images/profile.jpg',
+                },
+                ghanaPost: {
+                  type: 'string',
+                  description: 'Ghana Post GPS digital address (optional)',
+                  example: 'GA-184-1234',
+                },
               },
             },
           },
@@ -246,6 +270,27 @@ Tokens are valid for 24 hours after login.
                   description: 'User address (optional)',
                   example: '123 Main St, City, Country',
                 },
+                country: {
+                  type: 'string',
+                  description: 'User country (optional, defaults to "Ghana")',
+                  example: 'Ghana',
+                },
+                dob: {
+                  type: 'string',
+                  format: 'date',
+                  description: 'Date of birth (optional)',
+                  example: '1992-05-15',
+                },
+                image: {
+                  type: 'string',
+                  description: 'Profile image URL (optional)',
+                  example: 'https://randomuser.me/api/portraits/women/44.jpg',
+                },
+                ghanaPost: {
+                  type: 'string',
+                  description: 'Ghana Post GPS digital address (optional)',
+                  example: 'GA-184-1234',
+                },
               },
             },
           },
@@ -280,8 +325,8 @@ Tokens are valid for 24 hours after login.
             },
             country: {
               type: 'string',
-              description: 'User country (optional)',
-              example: 'USA',
+              description: 'User country (optional, defaults to "Ghana")',
+              example: 'Ghana',
             },
             dob: {
               type: 'string',
@@ -289,16 +334,16 @@ Tokens are valid for 24 hours after login.
               description: 'Date of birth (optional)',
               example: '1990-01-01',
             },
-                  image: {
-                    type: 'string',
-                    description: 'Profile image URL (optional)',
-                    example: 'https://example.com/images/profile.jpg',
-                  },
-                  ghanaPost: {
-                    type: 'string',
-                    description: 'Ghana Post GPS digital address (optional)',
-                    example: 'GA-184-1234',
-                  },
+            image: {
+              type: 'string',
+              description: 'Profile image URL (optional)',
+              example: 'https://example.com/images/profile.jpg',
+            },
+            ghanaPost: {
+              type: 'string',
+              description: 'Ghana Post GPS digital address (optional)',
+              example: 'GA-184-1234',
+            },
             createdAt: {
               type: 'string',
               format: 'date-time',
@@ -308,6 +353,66 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               format: 'date-time',
               description: 'Last update date',
+            },
+          },
+        },
+        ProfileUpdateRequest: {
+          type: 'object',
+          description: 'Partial update request - only provided fields will be updated',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'User name',
+              example: 'Jane Doe',
+            },
+            phone: {
+              type: 'string',
+              description: 'Phone number in international format (must be unique)',
+              pattern: '^\\+?[1-9]\\d{1,14}$',
+              example: '+233209876543',
+            },
+            email: {
+              type: 'string',
+              description: 'Email address',
+              example: 'jane@example.com',
+            },
+            address: {
+              type: 'string',
+              description: 'Street address',
+              example: '123 Main St',
+            },
+            country: {
+              type: 'string',
+              description: 'Country of residence',
+              example: 'Ghana',
+            },
+            dob: {
+              type: 'string',
+              format: 'date',
+              description: 'Date of birth',
+              example: '1992-05-15',
+            },
+            image: {
+              type: 'string',
+              description: 'Profile image URL',
+              example: 'https://example.com/new-avatar.jpg',
+            },
+            ghanaPost: {
+              type: 'string',
+              description: 'Ghana Post GPS digital address',
+              example: 'GA-184-1234',
+            },
+          },
+        },
+        ProfileUpdateResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'Profile updated successfully',
+            },
+            user: {
+              $ref: '#/components/schemas/UserProfile',
             },
           },
         },
