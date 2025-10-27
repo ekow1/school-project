@@ -9,10 +9,7 @@ const userSchema = new mongoose.Schema({
     country: { type: String },
     dob: { type: Date },
     image: { type: String },
-    gpsAddress: { 
-        type: String,
-        required: false
-    }
+    ghanaPost: { type: String }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

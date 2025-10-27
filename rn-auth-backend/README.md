@@ -86,18 +86,34 @@ POST /api/auth/register
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "phone": "+1234567890",
-  "email": "john@example.com",  // optional
-  "password": "password123",
-  "address": "123 Main St"       // optional
+  "name": "Jane Doe",              // Required (non-empty)
+  "phone": "+233201234567",        // Required (international format, unique)
+  "password": "securePassword123", // Required (min 6 characters)
+  "email": "janedoe@example.com",  // Optional
+  "address": "East Legon, Accra",  // Optional
+  "country": "Ghana",              // Optional
+  "dob": "1992-05-15",             // Optional
+  "image": "https://randomuser.me/api/portraits/women/44.jpg", // Optional
+  "ghanaPost": "GA-184-1234"       // Optional (Ghana Post GPS address)
 }
 ```
 
 **Response:**
 ```json
 {
-  "message": "User created successfully"
+  "message": "User created successfully",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "507f1f77bcf86cd799439011",
+    "name": "Jane Doe",
+    "phone": "+233201234567",
+    "email": "janedoe@example.com",
+    "address": "East Legon, Accra",
+    "country": "Ghana",
+    "dob": "1992-05-15",
+    "image": "https://randomuser.me/api/portraits/women/44.jpg",
+    "ghanaPost": "GA-184-1234"
+  }
 }
 ```
 
@@ -143,7 +159,7 @@ Authorization: Bearer <your-jwt-token>
   "country": "USA",
   "dob": "1990-01-01",
   "image": "https://example.com/profile.jpg",
-  "gpsAddress": "GA-184-1234",
+  "ghanaPost": "GA-184-1234",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
@@ -161,7 +177,7 @@ Content-Type: application/json
   "country": "Canada",
   "dob": "1992-05-15",
   "image": "https://example.com/new-profile.jpg",
-  "gpsAddress": "AK-039-5678"
+  "ghanaPost": "AK-039-5678"
 }
 ```
 

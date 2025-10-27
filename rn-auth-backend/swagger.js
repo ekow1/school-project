@@ -112,20 +112,42 @@ Tokens are valid for 24 hours after login.
             },
             phone: {
               type: 'string',
-              example: '+1234567890',
+              description: 'Phone number in international format',
+              pattern: '^\\+?[1-9]\\d{1,14}$',
+              example: '+233201234567',
             },
             email: {
               type: 'string',
+              description: 'Email address (optional)',
               example: 'john.doe@example.com',
             },
             password: {
               type: 'string',
               minLength: 6,
-              example: 'password123',
+              description: 'Password (minimum 6 characters)',
+              example: 'securePassword123',
             },
             address: {
               type: 'string',
-              example: '123 Main St, City, Country',
+              example: 'East Legon, Accra',
+            },
+            country: {
+              type: 'string',
+              example: 'Ghana',
+            },
+            dob: {
+              type: 'string',
+              format: 'date',
+              example: '1992-05-15',
+            },
+            image: {
+              type: 'string',
+              example: 'https://randomuser.me/api/portraits/women/44.jpg',
+            },
+            ghanaPost: {
+              type: 'string',
+              description: 'Ghana Post GPS digital address',
+              example: 'GA-184-1234',
             },
           },
         },
@@ -266,16 +288,16 @@ Tokens are valid for 24 hours after login.
               description: 'Date of birth (optional)',
               example: '1990-01-01',
             },
-            image: {
-              type: 'string',
-              description: 'Profile image URL (optional)',
-              example: 'https://example.com/images/profile.jpg',
-            },
-            gpsAddress: {
-              type: 'string',
-              description: 'Ghana Post GPS digital address (optional)',
-              example: 'GA-184-1234',
-            },
+                  image: {
+                    type: 'string',
+                    description: 'Profile image URL (optional)',
+                    example: 'https://example.com/images/profile.jpg',
+                  },
+                  ghanaPost: {
+                    type: 'string',
+                    description: 'Ghana Post GPS digital address (optional)',
+                    example: 'GA-184-1234',
+                  },
             createdAt: {
               type: 'string',
               format: 'date-time',

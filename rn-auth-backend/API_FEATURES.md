@@ -13,7 +13,7 @@
 - ✅ **country** - Country of residence
 - ✅ **dob** - Date of birth (Date format)
 - ✅ **image** - Profile image URL
-- ✅ **gpsAddress** - Ghana Post GPS digital address (String, e.g., "GA-184-1234")
+- ✅ **ghanaPost** - Ghana Post GPS digital address (String, e.g., "GA-184-1234")
 
 ### Auto-generated Fields
 - ✅ **_id** - MongoDB ObjectId
@@ -31,15 +31,15 @@
 - **Request Body**:
   ```json
   {
-    "name": "John Doe",           // Required
-    "phone": "+1234567890",       // Required (unique)
-    "password": "password123",    // Required
-    "email": "john@example.com",  // Optional
-    "address": "123 Main St",     // Optional
-    "country": "USA",             // Optional
-    "dob": "1990-01-01",          // Optional
-    "image": "url",               // Optional
-    "gpsAddress": { ... }         // Optional
+    "name": "Jane Doe",                                        // Required
+    "phone": "+233201234567",                                  // Required (unique)
+    "password": "securePassword123",                           // Required
+    "email": "janedoe@example.com",                           // Optional
+    "address": "East Legon, Accra",                           // Optional
+    "country": "Ghana",                                        // Optional
+    "dob": "1992-05-15",                                      // Optional
+    "image": "https://randomuser.me/api/portraits/women/44.jpg", // Optional
+    "ghanaPost": "GA-184-1234"                                // Optional (Ghana Post GPS address)
   }
   ```
 - **Response**: Returns JWT token and user data
@@ -96,7 +96,7 @@ Authorization: Bearer <your-jwt-token>
     "country": "Canada",
     "dob": "1992-05-15",
     "image": "https://example.com/image.jpg",
-    "gpsAddress": "AK-039-5678"
+    "ghanaPost": "AK-039-5678"
   }
   ```
 - **Note**: Fields not provided remain unchanged
@@ -218,12 +218,20 @@ Interactive API documentation available at:
 - Should be provided in ISO date format: `YYYY-MM-DD`
 
 ### GPS Address
-- Simple string field with Ghana Post GPS digital address
-- Format: XX-XXX-XXXX
+- Object with two fields:
+  - **address**: Full address description (String)
+  - **ghanaPost**: Ghana Post GPS code (String)
+- Ghana Post format: XX-XXX-XXXX
   - First 2 letters: Region code (e.g., GA=Greater Accra, AK=Ashanti)
   - Next 3 digits: Area code
   - Last 4 digits: Specific location code
-- Example: "GA-184-1234"
+- Example:
+  ```json
+  {
+    "address": "Accra, Greater Accra Region, Ghana",
+    "ghanaPost": "GA-184-1234"
+  }
+  ```
 
 ### Image
 - Stored as string (URL)

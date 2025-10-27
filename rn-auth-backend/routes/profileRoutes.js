@@ -79,7 +79,7 @@ router.get('/', getProfile);
  *               image:
  *                 type: string
  *                 example: "https://example.com/images/profile.jpg"
- *               gpsAddress:
+ *               ghanaPost:
  *                 type: string
  *                 example: "GA-184-1234"
  *     responses:

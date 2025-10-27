@@ -17,11 +17,15 @@ const router = express.Router();
  *           schema:
  *             $ref: '#/components/schemas/RegisterRequest'
  *           example:
- *             name: "John Doe"
- *             phone: "+1234567890"
- *             email: "john.doe@example.com"
+ *             name: "Jane Doe"
+ *             phone: "+233201234567"
+ *             email: "janedoe@example.com"
  *             password: "securePassword123"
- *             address: "123 Main St, City, Country"
+ *             address: "East Legon, Accra"
+ *             country: "Ghana"
+ *             dob: "1992-05-15"
+ *             image: "https://randomuser.me/api/portraits/women/44.jpg"
+ *             ghanaPost: "GA-184-1234"
  *     responses:
  *       201:
  *         description: User registered successfully with token and user data
@@ -34,18 +38,36 @@ const router = express.Router();
  *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxMmY5ZTNhZTEwYjRmMDAxNWI1YWNkYyIsImlhdCI6MTYzMDU0MDg0MiwiZXhwIjoxNjMwNjI3MjQyfQ.9kX_7J5KZ8Y4bQ_3kF7Lq4mN2dR8vT6wP1xY4sZ7vA8"
  *               user:
  *                 id: "507f1f77bcf86cd799439011"
- *                 name: "John Doe"
- *                 phone: "+1234567890"
- *                 email: "john.doe@example.com"
- *                 address: "123 Main St, City, Country"
+ *                 name: "Jane Doe"
+ *                 phone: "+233201234567"
+ *                 email: "janedoe@example.com"
+ *                 address: "East Legon, Accra"
+ *                 country: "Ghana"
+ *                 dob: "1992-05-15"
+ *                 image: "https://randomuser.me/api/portraits/women/44.jpg"
+ *                 ghanaPost: "GA-184-1234"
  *       400:
- *         description: Phone already in use or bad request
+ *         description: Validation error or phone already in use
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *             example:
- *               message: "Phone already in use"
+ *             examples:
+ *               phoneInUse:
+ *                 value:
+ *                   message: "Phone already in use"
+ *               nameRequired:
+ *                 value:
+ *                   message: "Name is required"
+ *               phoneRequired:
+ *                 value:
+ *                   message: "Phone number is required"
+ *               invalidPhone:
+ *                 value:
+ *                   message: "Invalid phone number format. Use international format (e.g., +233201234567)"
+ *               passwordTooShort:
+ *                 value:
+ *                   message: "Password must be at least 6 characters long"
  *       500:
  *         description: Server error
  *         content:
@@ -88,6 +110,23 @@ router.post('/register', register);
  *                 phone: "+1234567890"
  *                 email: "john.doe@example.com"
  *                 address: "123 Main St, City, Country"
+ *                 country: "USA"
+ *                 dob: "1990-01-01"
+ *                 image: "https://example.com/images/profile.jpg"
+ *                 ghanaPost: "GA-184-1234"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               phoneRequired:
+ *                 value:
+ *                   message: "Phone number is required"
+ *               passwordRequired:
+ *                 value:
+ *                   message: "Password is required"
  *       401:
  *         description: Invalid credentials
  *         content:

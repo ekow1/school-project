@@ -12,7 +12,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { name, email, address, country, dob, image, gpsAddress } = req.body;
+        const { name, email, address, country, dob, image, ghanaPost } = req.body;
         
         // Find user
         const user = await User.findById(req.userId);
@@ -25,7 +25,7 @@ export const updateProfile = async (req, res) => {
         if (country !== undefined) user.country = country;
         if (dob !== undefined) user.dob = dob;
         if (image !== undefined) user.image = image;
-        if (gpsAddress !== undefined) user.gpsAddress = gpsAddress;
+        if (ghanaPost !== undefined) user.ghanaPost = ghanaPost;
 
         await user.save();
 
