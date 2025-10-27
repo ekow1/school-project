@@ -24,13 +24,13 @@ const stationSchema = new mongoose.Schema({
         trim: true
     },
     coordinates: {
-        lat: {
+        latitude: {
             type: Number,
             required: false,
             min: -90,
             max: 90
         },
-        lng: {
+        longitude: {
             type: Number,
             required: false,
             min: -180,
@@ -70,6 +70,6 @@ stationSchema.virtual('personnel', {
 // Index for efficient queries
 stationSchema.index({ call_sign: 1 });
 stationSchema.index({ region: 1 });
-stationSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 });
+stationSchema.index({ 'coordinates.latitude': 1, 'coordinates.longitude': 1 });
 
 export default mongoose.model('Station', stationSchema);

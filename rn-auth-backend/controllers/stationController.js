@@ -9,52 +9,52 @@ export const createStation = async (req, res) => {
         // Validate coordinates if provided
         if (coordinates) {
             // Handle both lat/lng and latitude/longitude formats
-            let lat, lng;
+            let latitude, longitude;
             
-            if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                lat = coordinates.lat;
-                lng = coordinates.lng;
-            } else if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                lat = coordinates.latitude;
-                lng = coordinates.longitude;
+            if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
+                latitude = coordinates.latitude;
+                longitude = coordinates.longitude;
+            } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
+                latitude = coordinates.lat;
+                longitude = coordinates.lng;
             } else {
                 return res.status(400).json({
                     success: false,
-                    message: 'Coordinates must include lat/lng or latitude/longitude'
+                    message: 'Coordinates must include latitude/longitude or lat/lng'
                 });
             }
 
-            if (typeof lat !== 'number' || typeof lng !== 'number') {
+            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
                 return res.status(400).json({
                     success: false,
-                    message: 'Coordinates must be numbers (lat and lng)'
+                    message: 'Coordinates must be numbers (latitude and longitude)'
                 });
             }
-            if (lat < -90 || lat > 90) {
+            if (latitude < -90 || latitude > 90) {
                 return res.status(400).json({
                     success: false,
                     message: 'Latitude must be between -90 and 90'
                 });
             }
-            if (lng < -180 || lng > 180) {
+            if (longitude < -180 || longitude > 180) {
                 return res.status(400).json({
                     success: false,
                     message: 'Longitude must be between -180 and 180'
                 });
             }
 
-            // Normalize coordinates to lat/lng format
-            coordinates = { lat, lng };
+            // Normalize coordinates to latitude/longitude format
+            coordinates = { latitude, longitude };
         }
 
         // Check if station already exists based on location, coordinates, or phone number
         let existingStation = null;
         
-        // Check by coordinates (most reliable)
-        if (coordinates && coordinates.lat && coordinates.lng) {
+        // Check by coordinates (most reliable) - use normalized coordinates
+        if (coordinates && coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
             existingStation = await Station.findOne({
-                'coordinates.lat': coordinates.lat,
-                'coordinates.lng': coordinates.lng
+                'coordinates.latitude': coordinates.latitude,
+                'coordinates.longitude': coordinates.longitude
             });
         }
         
@@ -80,7 +80,12 @@ export const createStation = async (req, res) => {
             if (call_sign && !existingStation.call_sign) updateData.call_sign = call_sign;
             if (location && !existingStation.location) updateData.location = location;
             if (location_url && !existingStation.location_url) updateData.location_url = location_url;
-            if (coordinates && !existingStation.coordinates) updateData.coordinates = coordinates;
+            // Only update coordinates if existing doesn't have them or new ones are different
+            if (coordinates && (!existingStation.coordinates || 
+                (existingStation.coordinates.latitude !== coordinates.latitude || 
+                 existingStation.coordinates.longitude !== coordinates.longitude))) {
+                updateData.coordinates = coordinates;
+            }
             if (region && !existingStation.region) updateData.region = region;
             if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
 
@@ -158,32 +163,32 @@ export const bulkCreateStations = async (req, res) => {
                 // Validate coordinates if provided
                 if (coordinates) {
                     // Handle both lat/lng and latitude/longitude formats
-                    let lat, lng;
+                    let latitude, longitude;
                     
-                    if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                        lat = coordinates.lat;
-                        lng = coordinates.lng;
-                    } else if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                        lat = coordinates.latitude;
-                        lng = coordinates.longitude;
+                    if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
+                        latitude = coordinates.latitude;
+                        longitude = coordinates.longitude;
+                    } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
+                        latitude = coordinates.lat;
+                        longitude = coordinates.lng;
                     } else {
                         results.errors.push({
                             index: i,
                             data: stationData,
-                            error: 'Coordinates must include lat/lng or latitude/longitude'
+                            error: 'Coordinates must include latitude/longitude or lat/lng'
                         });
                         continue;
                     }
 
-                    if (typeof lat !== 'number' || typeof lng !== 'number') {
+                    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
                         results.errors.push({
                             index: i,
                             data: stationData,
-                            error: 'Coordinates must be numbers (lat and lng)'
+                            error: 'Coordinates must be numbers (latitude and longitude)'
                         });
                         continue;
                     }
-                    if (lat < -90 || lat > 90) {
+                    if (latitude < -90 || latitude > 90) {
                         results.errors.push({
                             index: i,
                             data: stationData,
@@ -191,7 +196,7 @@ export const bulkCreateStations = async (req, res) => {
                         });
                         continue;
                     }
-                    if (lng < -180 || lng > 180) {
+                    if (longitude < -180 || longitude > 180) {
                         results.errors.push({
                             index: i,
                             data: stationData,
@@ -200,18 +205,18 @@ export const bulkCreateStations = async (req, res) => {
                         continue;
                     }
 
-                    // Normalize coordinates to lat/lng format
-                    stationData.coordinates = { lat, lng };
+                    // Normalize coordinates to latitude/longitude format
+                    stationData.coordinates = { latitude, longitude };
                 }
 
                 // Check if station already exists
                 let existingStation = null;
                 
-                // Check by coordinates (most reliable)
-                if (coordinates && coordinates.lat && coordinates.lng) {
+                // Check by coordinates (most reliable) - use normalized coordinates
+                if (stationData.coordinates && stationData.coordinates.latitude !== undefined && stationData.coordinates.longitude !== undefined) {
                     existingStation = await Station.findOne({
-                        'coordinates.lat': coordinates.lat,
-                        'coordinates.lng': coordinates.lng
+                        'coordinates.latitude': stationData.coordinates.latitude,
+                        'coordinates.longitude': stationData.coordinates.longitude
                     });
                 }
                 
@@ -237,7 +242,12 @@ export const bulkCreateStations = async (req, res) => {
                     if (call_sign && !existingStation.call_sign) updateData.call_sign = call_sign;
                     if (location && !existingStation.location) updateData.location = location;
                     if (location_url && !existingStation.location_url) updateData.location_url = location_url;
-                    if (coordinates && !existingStation.coordinates) updateData.coordinates = coordinates;
+                    // Only update coordinates if existing doesn't have them or new ones are different
+                    if (stationData.coordinates && (!existingStation.coordinates || 
+                        (existingStation.coordinates.latitude !== stationData.coordinates.latitude || 
+                         existingStation.coordinates.longitude !== stationData.coordinates.longitude))) {
+                        updateData.coordinates = stationData.coordinates;
+                    }
                     if (region && !existingStation.region) updateData.region = region;
                     if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
 
@@ -377,42 +387,42 @@ export const updateStation = async (req, res) => {
         // Validate coordinates if provided
         if (coordinates) {
             // Handle both lat/lng and latitude/longitude formats
-            let lat, lng;
+            let latitude, longitude;
             
-            if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                lat = coordinates.lat;
-                lng = coordinates.lng;
-            } else if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                lat = coordinates.latitude;
-                lng = coordinates.longitude;
+            if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
+                latitude = coordinates.latitude;
+                longitude = coordinates.longitude;
+            } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
+                latitude = coordinates.lat;
+                longitude = coordinates.lng;
             } else {
                 return res.status(400).json({
                     success: false,
-                    message: 'Coordinates must include lat/lng or latitude/longitude'
+                    message: 'Coordinates must include latitude/longitude or lat/lng'
                 });
             }
 
-            if (typeof lat !== 'number' || typeof lng !== 'number') {
+            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
                 return res.status(400).json({
                     success: false,
-                    message: 'Coordinates must be numbers (lat and lng)'
+                    message: 'Coordinates must be numbers (latitude and longitude)'
                 });
             }
-            if (lat < -90 || lat > 90) {
+            if (latitude < -90 || latitude > 90) {
                 return res.status(400).json({
                     success: false,
                     message: 'Latitude must be between -90 and 90'
                 });
             }
-            if (lng < -180 || lng > 180) {
+            if (longitude < -180 || longitude > 180) {
                 return res.status(400).json({
                     success: false,
                     message: 'Longitude must be between -180 and 180'
                 });
             }
 
-            // Normalize coordinates to lat/lng format
-            req.body.coordinates = { lat, lng };
+            // Normalize coordinates to latitude/longitude format
+            req.body.coordinates = { latitude, longitude };
         }
 
         const station = await Station.findByIdAndUpdate(
