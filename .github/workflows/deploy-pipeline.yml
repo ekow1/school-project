@@ -3,8 +3,9 @@ name: Complete Deployment Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    paths:
+      - 'ai-backend/**'
+      - '.github/workflows/deploy-pipeline.yml'
   workflow_dispatch:
 
 jobs:

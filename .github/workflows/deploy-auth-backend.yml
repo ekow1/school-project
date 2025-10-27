@@ -6,8 +6,6 @@ on:
     paths:
       - 'rn-auth-backend/**'
       - '.github/workflows/deploy-auth-backend.yml'
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -185,35 +183,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install dependencies locally
-      run: |
-        cd rn-auth-backend
-        npm ci
-
     - name: Create deployment package
       run: |
-        mkdir -p deploy
-        cp -r rn-auth-backend/controllers deploy/
-        cp -r rn-auth-backend/middleware deploy/
-        cp -r rn-auth-backend/models deploy/
-        cp -r rn-auth-backend/routes deploy/
-        cp rn-auth-backend/server.js deploy/
-        cp rn-auth-backend/swagger.js deploy/
-        cp rn-auth-backend/package*.json deploy/
-        cp rn-auth-backend/ecosystem.config.cjs deploy/
-
-        # Create .env file
-        cat > deploy/.env << EOF
-        MONGODB_URI=${{ secrets.MONGODB_URI }}
+        # Create .env file in rn-auth-backend directory
+        cat > rn-auth-backend/.env << EOF
+        MONGO_URI=${{ secrets.MONGODB_URI }}
         PORT=5000
-        JWT_SECRET=$(openssl rand -base64 32)
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
         NODE_ENV=production
         EOF
 
         # Create logs directory
-        mkdir -p deploy/logs
+        mkdir -p rn-auth-backend/logs
 
-        tar -czf auth-backend.tar.gz -C deploy .
+        # Create tarball of entire rn-auth-backend directory
+        tar -czf auth-backend.tar.gz rn-auth-backend/
 
     - name: Upload deployment package
       uses: appleboy/scp-action@v0.1.7
@@ -223,7 +207,7 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         source: "auth-backend.tar.gz"
-        target: "~/school-project/backend/rn-auth-backend/"
+        target: "/tmp/"
 
     - name: Extract and deploy application
       uses: appleboy/ssh-action@v1.0.3
@@ -233,16 +217,37 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
-          echo "📁 Creating application directory..."
-          mkdir -p ~/school-project/backend/rn-auth-backend
-          cd ~/school-project/backend/rn-auth-backend
+          echo "📁 Creating backend directory..."
+          mkdir -p ~/school-project/backend
+          cd ~/school-project/backend
           
           echo "📦 Extracting deployment package..."
-          tar -xzf auth-backend.tar.gz
-          rm auth-backend.tar.gz
+          tar -xzf /tmp/auth-backend.tar.gz
+          rm /tmp/auth-backend.tar.gz
           
-          echo "📋 Deployment package contents:"
+          echo "📋 Directory structure:"
           ls -la
+          
+          echo "📂 Entering rn-auth-backend..."
+          cd rn-auth-backend
+          
+          echo "📋 Application files:"
+          ls -la
+          
+          echo "📋 Checking key files..."
+          if [ -f "server.js" ]; then
+            echo "✅ server.js found"
+          else
+            echo "❌ server.js NOT found!"
+            exit 1
+          fi
+          
+          if [ -f ".env" ]; then
+            echo "✅ .env found"
+          else
+            echo "❌ .env NOT found!"
+            exit 1
+          fi
 
           echo "📦 Installing production dependencies..."
           npm install --production
