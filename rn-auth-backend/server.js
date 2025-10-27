@@ -27,7 +27,21 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', verifyToken, profileRoutes);
 
-// Health check endpoint for monitoring
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Health]
+ *     description: Check if the authentication backend service is running and healthy
+ *     responses:
+ *       200:
+ *         description: Service is healthy and running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthResponse'
+ */
 app.get('/api/health', (req, res) => {
     res.status(200).json({ 
         status: 'ok', 

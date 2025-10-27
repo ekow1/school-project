@@ -5,11 +5,59 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'RN Auth Backend API',
+      title: 'Auth Backend API',
       version: '1.0.0',
-      description: 'A simple authentication API for React Native applications',
+      description: `
+## Authentication Backend API
+
+A secure authentication backend API built with Node.js, Express, and MongoDB for React Native applications.
+
+### Features
+- User registration with email (optional), phone, name, password, and address
+- User login with JWT token generation
+- Protected routes with JWT authentication
+- User profile management
+- Health check endpoint
+
+### Authentication
+Protected routes require a Bearer token in the Authorization header:
+\`\`\`
+Authorization: Bearer <your-jwt-token>
+\`\`\`
+
+Tokens are valid for 24 hours after login.
+
+### Base URL
+- **Production**: https://auth.ekowlabs.space
+- **Development**: http://localhost:5000
+      `.trim(),
+      contact: {
+        name: 'API Support',
+        url: 'https://github.com/ekow1/school-project',
+      },
+      license: {
+        name: 'ISC',
+      },
     },
+    tags: [
+      {
+        name: 'Authentication',
+        description: 'User authentication endpoints (register and login)',
+      },
+      {
+        name: 'Profile',
+        description: 'User profile management endpoints (requires authentication)',
+      },
+      {
+        name: 'Health',
+        description: 'Service health check endpoints',
+      },
+    ],
     servers: [
+      {
+        url: 'https://auth.ekowlabs.space',
+        description: 'Production server',
+      },
       {
         url: 'http://localhost:5000',
         description: 'Development server',
@@ -172,13 +220,35 @@ const options = {
           properties: {
             message: {
               type: 'string',
+              example: 'Error message here',
+            },
+          },
+        },
+        HealthResponse: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              example: 'ok',
+              description: 'Health status of the service',
+            },
+            message: {
+              type: 'string',
+              example: 'Auth backend is running',
+              description: 'Status message',
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-01-01T00:00:00.000Z',
+              description: 'Server timestamp',
             },
           },
         },
       },
     },
   },
-  apis: ['./routes/*.js', './controllers/*.js'],
+  apis: ['./routes/*.js', './controllers/*.js', './server.js'],
 };
 
 const specs = swaggerJsdoc(options);
