@@ -149,18 +149,35 @@ Tokens are valid for 24 hours after login.
             token: {
               type: 'string',
               description: 'JWT token',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             },
             user: {
               type: 'object',
               properties: {
                 id: {
                   type: 'string',
+                  description: 'User ID',
+                  example: '507f1f77bcf86cd799439011',
                 },
                 name: {
                   type: 'string',
+                  description: 'User name',
+                  example: 'John Doe',
                 },
                 phone: {
                   type: 'string',
+                  description: 'User phone number',
+                  example: '+1234567890',
+                },
+                email: {
+                  type: 'string',
+                  description: 'User email (optional)',
+                  example: 'john.doe@example.com',
+                },
+                address: {
+                  type: 'string',
+                  description: 'User address (optional)',
+                  example: '123 Main St, City, Country',
                 },
               },
             },
@@ -172,6 +189,41 @@ Tokens are valid for 24 hours after login.
             message: {
               type: 'string',
               example: 'User created successfully',
+            },
+            token: {
+              type: 'string',
+              description: 'JWT token for authentication',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+            user: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  description: 'User ID',
+                  example: '507f1f77bcf86cd799439011',
+                },
+                name: {
+                  type: 'string',
+                  description: 'User name',
+                  example: 'John Doe',
+                },
+                phone: {
+                  type: 'string',
+                  description: 'User phone number',
+                  example: '+1234567890',
+                },
+                email: {
+                  type: 'string',
+                  description: 'User email (optional)',
+                  example: 'john.doe@example.com',
+                },
+                address: {
+                  type: 'string',
+                  description: 'User address (optional)',
+                  example: '123 Main St, City, Country',
+                },
+              },
             },
           },
         },

@@ -9,7 +9,7 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
- *     description: Create a new user account with phone, name, password, and optional email and address
+ *     description: Create a new user account with phone, name, password, and optional email and address. Returns JWT token and user data upon successful registration.
  *     requestBody:
  *       required: true
  *       content:
@@ -24,13 +24,20 @@ const router = express.Router();
  *             address: "123 Main St, City, Country"
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered successfully with token and user data
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RegisterResponse'
  *             example:
  *               message: "User created successfully"
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxMmY5ZTNhZTEwYjRmMDAxNWI1YWNkYyIsImlhdCI6MTYzMDU0MDg0MiwiZXhwIjoxNjMwNjI3MjQyfQ.9kX_7J5KZ8Y4bQ_3kF7Lq4mN2dR8vT6wP1xY4sZ7vA8"
+ *               user:
+ *                 id: "507f1f77bcf86cd799439011"
+ *                 name: "John Doe"
+ *                 phone: "+1234567890"
+ *                 email: "john.doe@example.com"
+ *                 address: "123 Main St, City, Country"
  *       400:
  *         description: Phone already in use or bad request
  *         content:
@@ -79,6 +86,8 @@ router.post('/register', register);
  *                 id: "507f1f77bcf86cd799439011"
  *                 name: "John Doe"
  *                 phone: "+1234567890"
+ *                 email: "john.doe@example.com"
+ *                 address: "123 Main St, City, Country"
  *       401:
  *         description: Invalid credentials
  *         content:
