@@ -82,15 +82,12 @@ router.get('/', getProfile);
  *               gpsAddress:
  *                 type: object
  *                 properties:
- *                   latitude:
- *                     type: number
- *                     example: 40.7128
- *                   longitude:
- *                     type: number
- *                     example: -74.0060
  *                   address:
  *                     type: string
- *                     example: "New York, NY, USA"
+ *                     example: "Accra, Greater Accra Region, Ghana"
+ *                   ghanaPost:
+ *                     type: string
+ *                     example: "GA-184-1234"
  *     responses:
  *       200:
  *         description: Profile updated successfully

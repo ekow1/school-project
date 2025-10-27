@@ -144,9 +144,8 @@ Authorization: Bearer <your-jwt-token>
   "dob": "1990-01-01",
   "image": "https://example.com/profile.jpg",
   "gpsAddress": {
-    "latitude": 40.7128,
-    "longitude": -74.0060,
-    "address": "New York, NY, USA"
+    "address": "Accra, Greater Accra Region, Ghana",
+    "ghanaPost": "GA-184-1234"
   },
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -166,9 +165,8 @@ Content-Type: application/json
   "dob": "1992-05-15",
   "image": "https://example.com/new-profile.jpg",
   "gpsAddress": {
-    "latitude": 43.6532,
-    "longitude": -79.3832,
-    "address": "Toronto, ON, Canada"
+    "address": "Kumasi, Ashanti Region, Ghana",
+    "ghanaPost": "AK-039-5678"
   }
 }
 ```

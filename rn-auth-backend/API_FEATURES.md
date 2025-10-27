@@ -13,10 +13,9 @@
 - ✅ **country** - Country of residence
 - ✅ **dob** - Date of birth (Date format)
 - ✅ **image** - Profile image URL
-- ✅ **gpsAddress** - GPS location with:
-  - `latitude` (Number)
-  - `longitude` (Number)
-  - `address` (String)
+- ✅ **gpsAddress** - GPS location with Ghana Post digital address:
+  - `address` (String) - Full address
+  - `ghanaPost` (String) - Ghana Post GPS digital address (e.g., "GA-184-1234")
 
 ### Auto-generated Fields
 - ✅ **_id** - MongoDB ObjectId
@@ -100,9 +99,8 @@ Authorization: Bearer <your-jwt-token>
     "dob": "1992-05-15",
     "image": "https://example.com/image.jpg",
     "gpsAddress": {
-      "latitude": 43.6532,
-      "longitude": -79.3832,
-      "address": "Toronto, ON"
+      "address": "Kumasi, Ashanti Region, Ghana",
+      "ghanaPost": "AK-039-5678"
     }
   }
   ```
@@ -225,9 +223,12 @@ Interactive API documentation available at:
 - Should be provided in ISO date format: `YYYY-MM-DD`
 
 ### GPS Address
-- Object with three optional fields
-- Latitude and longitude as numbers
-- Address as string description
+- Object with Ghana Post digital address system
+- **address**: Full address string
+- **ghanaPost**: Ghana Post GPS code (format: XX-XXX-XXXX)
+  - First 2 letters: Region code (e.g., GA=Greater Accra, AK=Ashanti)
+  - Next 3 digits: Area code
+  - Last 4 digits: Specific location code
 
 ### Image
 - Stored as string (URL)

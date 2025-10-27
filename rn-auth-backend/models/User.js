@@ -10,11 +10,7 @@ const userSchema = new mongoose.Schema({
     dob: { type: Date },
     image: { type: String },
     gpsAddress: { 
-        type: {
-            latitude: { type: Number },
-            longitude: { type: Number },
-            address: { type: String }
-        },
+        type: String,
         required: false
     }
 }, { timestamps: true });
