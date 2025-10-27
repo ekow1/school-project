@@ -33,7 +33,7 @@
 All other fields are optional and do not require validation:
 - `email` (String)
 - `address` (String)
-- `country` (String)
+- `country` (String, defaults to "Ghana")
 - `dob` (Date - format: YYYY-MM-DD)
 - `image` (String - URL)
 - `ghanaPost` (String - Ghana Post GPS digital address)

@@ -91,7 +91,7 @@ Content-Type: application/json
   "password": "securePassword123", // Required (min 6 characters)
   "email": "janedoe@example.com",  // Optional
   "address": "East Legon, Accra",  // Optional
-  "country": "Ghana",              // Optional
+  "country": "Ghana",              // Optional (defaults to "Ghana")
   "dob": "1992-05-15",             // Optional
   "image": "https://randomuser.me/api/portraits/women/44.jpg", // Optional
   "ghanaPost": "GA-184-1234"       // Optional (Ghana Post GPS address)

@@ -9,7 +9,7 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
- *     description: Create a new user account with phone, name, password, and optional email and address. Returns JWT token and user data upon successful registration.
+ *     description: Create a new user account with phone, name, password, and optional email and address. Returns JWT token and user data upon successful registration. If country is not provided, it defaults to "Ghana".
  *     requestBody:
  *       required: true
  *       content:

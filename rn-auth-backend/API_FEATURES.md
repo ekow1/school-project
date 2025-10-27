@@ -10,7 +10,7 @@
 ### Optional Fields
 - ✅ **email** - Email address
 - ✅ **address** - Street address
-- ✅ **country** - Country of residence
+- ✅ **country** - Country of residence (defaults to "Ghana" if not provided)
 - ✅ **dob** - Date of birth (Date format)
 - ✅ **image** - Profile image URL
 - ✅ **ghanaPost** - Ghana Post GPS digital address (String, e.g., "GA-184-1234")

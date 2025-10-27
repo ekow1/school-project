@@ -133,6 +133,7 @@ Tokens are valid for 24 hours after login.
             },
             country: {
               type: 'string',
+              default: 'Ghana',
               example: 'Ghana',
             },
             dob: {
