@@ -5,7 +5,6 @@ on:
     branches: [ main ]
     paths:
       - 'rn-auth-backend/**'
-      - '.github/workflows/deploy-auth-backend.yml'
   workflow_dispatch:
 
 jobs:
@@ -283,25 +282,45 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
+          cd ~/school-project/backend/rn-auth-backend
+          
+          echo "🔍 Checking .env file..."
+          if [ -f ".env" ]; then
+            echo "✅ .env exists"
+            echo "Environment variables (masked):"
+            cat .env | sed 's/=.*/=***MASKED***/g'
+          else
+            echo "❌ .env missing!"
+          fi
+          
+          echo ""
           echo "🔍 Waiting for application to start..."
           sleep 10
           
-          # Check if PM2 process is running
-          if pm2 describe auth-backend > /dev/null 2>&1; then
-            echo "✅ PM2 process is running"
-            pm2 info auth-backend --no-color
-          else
-            echo "❌ PM2 process not found"
-            exit 1
-          fi
+          echo ""
+          echo "📊 PM2 Status:"
+          pm2 list
           
+          echo ""
+          echo "📋 PM2 Process Info:"
+          pm2 info auth-backend --no-color || echo "Process not found"
+          
+          echo ""
+          echo "📝 Error Logs (last 50 lines):"
+          cat logs/err.log | tail -50 || echo "No error log"
+          
+          echo ""
+          echo "📝 Output Logs (last 50 lines):"
+          cat logs/out.log | tail -50 || echo "No output log"
+          
+          echo ""
           # Check if API is responding
           if curl -f -s http://localhost:5000/api/health > /dev/null; then
             echo "✅ API is responding"
             curl -s http://localhost:5000/api/health | jq '.'
           else
-            echo "⚠️ API not responding yet, checking logs..."
-            pm2 logs auth-backend --lines 30 --nostream
+            echo "❌ API not responding"
+            echo "This is expected - check logs above for the actual error"
             exit 1
           fi
 
