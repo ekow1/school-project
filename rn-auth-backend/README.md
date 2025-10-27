@@ -190,13 +190,37 @@ npm run pm2:monit      # Monitor process
 
 ## 🚀 Production Deployment
 
-For production deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
+### 📖 Deployment Guides
 
-### Quick Deploy
+- **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Step-by-step first-time deployment (⭐ Start here!)
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide with troubleshooting
+- **[deploy.sh](./deploy.sh)** - Manual deployment script
+
+### ⚡ Quick First Deployment
+
+```bash
+# 1. SSH to server
+ssh user@auth.ekowlabs.space
+
+# 2. Clone repository
+mkdir -p ~/school-project && cd ~/school-project
+git clone YOUR_REPO_URL .
+
+# 3. Run setup script
+cd backend/rn-auth-backend
+chmod +x install.sh && ./install.sh
+
+# 4. Create .env and deploy
+# (See QUICK_DEPLOY.md for details)
+```
+
+### 🔄 Automated Deployments
+
+After initial setup, deployments are automatic:
 
 1. Set up GitHub Secrets (see DEPLOYMENT.md)
 2. Push to main branch
-3. GitHub Actions will automatically deploy
+3. GitHub Actions deploys automatically ✨
 
 ## 🏗️ Project Structure
 

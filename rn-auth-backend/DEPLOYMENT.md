@@ -51,12 +51,29 @@ To manually trigger a deployment:
 
 ## 🔧 Server Setup
 
-### Initial Server Setup
+### First-Time Deployment Steps
 
-Run the installation script on your server:
+#### Step 1: Clone Repository on Server
+
+SSH into your server and clone the repository:
 
 ```bash
-cd ~/school-project/backend/rn-auth-backend
+ssh user@auth.ekowlabs.space
+
+# Clone the repository
+mkdir -p ~/school-project
+cd ~/school-project
+git clone https://github.com/YOUR_USERNAME/school-project.git .
+
+# Navigate to auth backend
+cd backend/rn-auth-backend
+```
+
+#### Step 2: Run Server Setup Script
+
+Install all required software (Node.js, Caddy, PM2):
+
+```bash
 chmod +x install.sh
 ./install.sh
 ```
@@ -67,6 +84,56 @@ This will:
 - Configure reverse proxy for auth.ekowlabs.space
 - Set up PM2 for process management
 - Configure SSL certificates automatically
+
+#### Step 3: Manual First Deployment
+
+After server setup, deploy the application manually first:
+
+```bash
+# Navigate to the project directory
+cd ~/school-project/backend/rn-auth-backend
+
+# Create .env file
+cat > .env << EOF
+PORT=5000
+MONGO_URI=your-mongodb-connection-string
+JWT_SECRET=$(openssl rand -base64 32)
+NODE_ENV=production
+EOF
+
+# Install dependencies
+npm install --production
+
+# Start with PM2
+pm2 start ecosystem.config.cjs
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 to start on boot
+pm2 startup systemd
+# Follow the command it outputs
+```
+
+#### Step 4: Verify Deployment
+
+```bash
+# Check PM2 status
+pm2 list
+
+# Check logs
+pm2 logs auth-backend
+
+# Test the API
+curl http://localhost:5000/api/health
+
+# Test via domain
+curl https://auth.ekowlabs.space/api/health
+```
+
+### After First Deployment
+
+Once the initial setup is complete, all future deployments will happen automatically via GitHub Actions when you push to the main branch.
 
 ### Environment Variables
 

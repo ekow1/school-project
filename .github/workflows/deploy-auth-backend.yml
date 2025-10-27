@@ -55,18 +55,13 @@ jobs:
             # Check if PM2 is installed
             if command -v pm2 &> /dev/null; then
               echo "✅ PM2 is installed: $(pm2 --version)"
+            else
+              echo "⚠️ PM2 not found, installing..."
+              sudo npm install -g pm2
             fi
             
-            # Check if directories exist
-            if [ -d "~/school-project/backend/rn-auth-backend" ]; then
-              echo "✅ Application directory already exists"
-              echo "✅ Server setup complete - skipping installation"
-              exit 0
-            else
-              echo "⚠️ Software installed but app directory missing"
-              echo "Please ensure repository is cloned at ~/school-project/"
-              exit 0
-            fi
+            echo "✅ Server setup complete - skipping installation"
+            exit 0
           else
             echo "❌ Server not set up - proceeding with installation"
             exit 1
@@ -238,11 +233,16 @@ jobs:
         key: ${{ secrets.SP_SSH_KEY }}
         port: 22
         script: |
+          echo "📁 Creating application directory..."
+          mkdir -p ~/school-project/backend/rn-auth-backend
           cd ~/school-project/backend/rn-auth-backend
           
           echo "📦 Extracting deployment package..."
           tar -xzf auth-backend.tar.gz
           rm auth-backend.tar.gz
+          
+          echo "📋 Deployment package contents:"
+          ls -la
 
           echo "📦 Installing production dependencies..."
           npm install --production
