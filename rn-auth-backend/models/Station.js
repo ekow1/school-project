@@ -18,6 +18,11 @@ const stationSchema = new mongoose.Schema({
         required: false,
         trim: true
     },
+    location_url: {
+        type: String,
+        required: false,
+        trim: true
+    },
     coordinates: {
         lat: {
             type: Number,
