@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'rn-auth-backend/**'
+      - '.github/workflows/deploy-auth-backend.yml'  # Temporarily enabled for testing
   workflow_dispatch:
 
 jobs:
