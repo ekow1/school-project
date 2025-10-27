@@ -272,19 +272,9 @@ Tokens are valid for 24 hours after login.
               example: 'https://example.com/images/profile.jpg',
             },
             gpsAddress: {
-              type: 'object',
-              description: 'GPS location with Ghana Post address (optional)',
-              properties: {
-                address: {
-                  type: 'string',
-                  example: 'Accra, Greater Accra Region, Ghana',
-                },
-                ghanaPost: {
-                  type: 'string',
-                  description: 'Ghana Post GPS digital address',
-                  example: 'GA-184-1234',
-                },
-              },
+              type: 'string',
+              description: 'Ghana Post GPS digital address (optional)',
+              example: 'GA-184-1234',
             },
             createdAt: {
               type: 'string',
@@ -336,5 +326,4 @@ Tokens are valid for 24 hours after login.
 
 const specs = swaggerJsdoc(options);
 
-export { swaggerUi, specs };
 export { swaggerUi, specs };

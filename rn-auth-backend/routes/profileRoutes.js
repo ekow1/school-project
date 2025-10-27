@@ -80,14 +80,8 @@ router.get('/', getProfile);
  *                 type: string
  *                 example: "https://example.com/images/profile.jpg"
  *               gpsAddress:
- *                 type: object
- *                 properties:
- *                   address:
- *                     type: string
- *                     example: "Accra, Greater Accra Region, Ghana"
- *                   ghanaPost:
- *                     type: string
- *                     example: "GA-184-1234"
+ *                 type: string
+ *                 example: "GA-184-1234"
  *     responses:
  *       200:
  *         description: Profile updated successfully
