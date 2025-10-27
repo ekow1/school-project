@@ -76,6 +76,12 @@ Once the server is running, visit:
 - **Local**: http://localhost:5000/api-docs
 - **Production**: https://auth.ekowlabs.space/api-docs
 
+### Additional Documentation
+- [API_FEATURES.md](./API_FEATURES.md) - Complete API features and endpoint details
+- [PROFILE_UPDATE_GUIDE.md](./PROFILE_UPDATE_GUIDE.md) - Comprehensive guide for updating user profiles
+- [VALIDATION_RULES.md](./VALIDATION_RULES.md) - Field validation rules and patterns
+- [CHANGELOG_GHANAPOST.md](./CHANGELOG_GHANAPOST.md) - Recent changes and migration guide
+
 ## 🔌 API Endpoints
 
 ### Authentication
@@ -173,6 +179,7 @@ Content-Type: application/json
 
 {
   "name": "Jane Doe",
+  "phone": "+233209876543",
   "email": "jane@example.com",
   "country": "Canada",
   "dob": "1992-05-15",
@@ -185,9 +192,23 @@ Content-Type: application/json
 ```json
 {
   "message": "Profile updated successfully",
-  "user": { /* Updated user object */ }
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "Jane Doe",
+    "phone": "+233209876543",
+    "email": "jane@example.com",
+    "address": "123 Main St",
+    "country": "Canada",
+    "dob": "1992-05-15",
+    "image": "https://example.com/new-profile.jpg",
+    "ghanaPost": "AK-039-5678",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2025-10-27T12:00:00.000Z"
+  }
 }
 ```
+
+**Note:** All fields including phone number can be updated. Phone must be unique and in international format.
 
 #### Delete User Profile
 ```http

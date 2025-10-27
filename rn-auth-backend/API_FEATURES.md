@@ -92,6 +92,7 @@ Authorization: Bearer <your-jwt-token>
   ```json
   {
     "name": "Jane Doe",
+    "phone": "+233209876543",
     "email": "jane@example.com",
     "country": "Canada",
     "dob": "1992-05-15",
@@ -99,10 +100,11 @@ Authorization: Bearer <your-jwt-token>
     "ghanaPost": "AK-039-5678"
   }
   ```
-- **Note**: Fields not provided remain unchanged
+- **Note**: All fields including phone number can be updated. Phone number must be unique and in international format. Fields not provided remain unchanged
 - **Response**: Returns success message and updated user object
 - **Status Codes**:
   - `200` - Profile updated successfully
+  - `400` - Invalid phone format or phone already in use
   - `401` - Unauthorized
   - `404` - User not found
   - `500` - Server error

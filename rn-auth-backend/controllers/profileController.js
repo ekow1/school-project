@@ -12,11 +12,31 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { name, email, address, country, dob, image, ghanaPost } = req.body;
+        const { name, phone, email, address, country, dob, image, ghanaPost } = req.body;
         
         // Find user
         const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Validate phone number if it's being updated
+        if (phone) {
+            // Validate phone format
+            const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+            if (!phoneRegex.test(phone.replace(/[\s-]/g, ''))) {
+                return res.status(400).json({ 
+                    message: 'Invalid phone number format. Use international format (e.g., +233201234567)' 
+                });
+            }
+
+            // Check if phone is already in use by another user
+            if (phone !== user.phone) {
+                const existingUser = await User.findOne({ phone });
+                if (existingUser) {
+                    return res.status(400).json({ message: 'Phone number already in use' });
+                }
+                user.phone = phone;
+            }
+        }
 
         // Update fields if provided
         if (name) user.name = name;

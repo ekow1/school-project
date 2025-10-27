@@ -63,6 +63,10 @@ router.get('/', getProfile);
  *               name:
  *                 type: string
  *                 example: "John Doe"
+ *               phone:
+ *                 type: string
+ *                 description: "Phone number in international format"
+ *                 example: "+233201234567"
  *               email:
  *                 type: string
  *                 example: "john.doe@example.com"
@@ -95,6 +99,19 @@ router.get('/', getProfile);
  *                   example: "Profile updated successfully"
  *                 user:
  *                   $ref: '#/components/schemas/UserProfile'
+ *       400:
+ *         description: Validation error or phone already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               phoneInUse:
+ *                 value:
+ *                   message: "Phone number already in use"
+ *               invalidPhone:
+ *                 value:
+ *                   message: "Invalid phone number format. Use international format (e.g., +233201234567)"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
