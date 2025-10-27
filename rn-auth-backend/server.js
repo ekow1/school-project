@@ -48,6 +48,252 @@ app.use('/api/fire/superadmin', superAdminRoutes);
 
 /**
  * @swagger
+ * /api/fire/stations:
+ *   post:
+ *     summary: Create a new fire station (with intelligent upsert)
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Creates a new fire station or updates existing one if duplicate detected. Uses coordinates, location, or phone number for duplicate detection.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/StationCreateRequest'
+ *           examples:
+ *             complete_station:
+ *               summary: Complete station data
+ *               value:
+ *                 name: "Accra Central Fire Station"
+ *                 call_sign: "ACFS-001"
+ *                 location: "Central Business District, Accra"
+ *                 location_url: "https://maps.google.com/?q=5.6037,-0.1870"
+ *                 coordinates:
+ *                   lat: 5.6037
+ *                   lng: -0.1870
+ *                 region: "Greater Accra"
+ *                 phone_number: "+233302123456"
+ *             minimal_station:
+ *               summary: Minimal station data
+ *               value:
+ *                 name: "Test Station"
+ *                 location: "Test Location"
+ *     responses:
+ *       201:
+ *         description: Station created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StationResponse'
+ *       200:
+ *         description: Station updated or skipped
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StationResponse'
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *   get:
+ *     summary: Get all fire stations
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve all fire stations with optional region filtering
+ *     parameters:
+ *       - in: query
+ *         name: region
+ *         schema:
+ *           type: string
+ *         description: Filter stations by region
+ *         example: "Greater Accra"
+ *     responses:
+ *       200:
+ *         description: List of fire stations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: number
+ *                   example: 5
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Station'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *
+ * @swagger
+ * /api/fire/stations/bulk:
+ *   post:
+ *     summary: Bulk create/update fire stations
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Create or update multiple fire stations in one request. Each station is processed individually with upsert logic.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/StationBulkRequest'
+ *           examples:
+ *             bulk_stations:
+ *               summary: Multiple stations
+ *               value:
+ *                 stations:
+ *                   - name: "Accra Central Fire Station"
+ *                     location: "Central Business District, Accra"
+ *                     coordinates:
+ *                       lat: 5.6037
+ *                       lng: -0.1870
+ *                     phone_number: "+233302123456"
+ *                   - name: "Kumasi Fire Station"
+ *                     location: "Central Kumasi"
+ *                     coordinates:
+ *                       lat: 6.6885
+ *                       lng: -1.6244
+ *                     phone_number: "+233322123456"
+ *     responses:
+ *       200:
+ *         description: Bulk operation completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StationBulkResponse'
+ *       400:
+ *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *
+ * @swagger
+ * /api/fire/stations/{id}:
+ *   get:
+ *     summary: Get fire station by ID
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieve a specific fire station by its ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Station ID
+ *         example: "507f1f77bcf86cd799439011"
+ *     responses:
+ *       200:
+ *         description: Fire station details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Station'
+ *       400:
+ *         description: Invalid station ID format
+ *       404:
+ *         description: Station not found
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *   put:
+ *     summary: Update fire station
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Update an existing fire station
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Station ID
+ *         example: "507f1f77bcf86cd799439011"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/StationCreateRequest'
+ *     responses:
+ *       200:
+ *         description: Station updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Station updated successfully"
+ *                 data:
+ *                   $ref: '#/components/schemas/Station'
+ *       400:
+ *         description: Invalid input data
+ *       404:
+ *         description: Station not found
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *   delete:
+ *     summary: Delete fire station
+ *     tags: [Stations]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Delete a fire station by its ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Station ID
+ *         example: "507f1f77bcf86cd799439011"
+ *     responses:
+ *       200:
+ *         description: Station deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Station deleted successfully"
+ *       400:
+ *         description: Invalid station ID format
+ *       404:
+ *         description: Station not found
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *
+ * @swagger
  * /api/health:
  *   get:
  *     summary: Health check endpoint
