@@ -77,6 +77,8 @@ Once the server is running, visit:
 - **Production**: https://auth.ekowlabs.space/api-docs
 
 ### Additional Documentation
+
+**Authentication & Profile Management:**
 - [API_FEATURES.md](./API_FEATURES.md) - Complete API features and endpoint details
 - [PROFILE_UPDATE_GUIDE.md](./PROFILE_UPDATE_GUIDE.md) - Comprehensive guide for updating user profiles
 - [VALIDATION_RULES.md](./VALIDATION_RULES.md) - Field validation rules and patterns
@@ -84,6 +86,18 @@ Once the server is running, visit:
 - [PATCH_MIGRATION.md](./PATCH_MIGRATION.md) - Migration guide for PUT to PATCH change
 - [SWAGGER_UPDATE_SUMMARY.md](./SWAGGER_UPDATE_SUMMARY.md) - Swagger documentation updates
 - [CHANGELOG_GHANAPOST.md](./CHANGELOG_GHANAPOST.md) - Recent changes and migration guide
+
+**Fire Service Management:**
+- [FIRE_SERVICE_README.md](./FIRE_SERVICE_README.md) - Complete Fire Service system documentation
+- [FIRE_SERVICE_QUICKSTART.md](./FIRE_SERVICE_QUICKSTART.md) - Quick start guide for Fire Service API
+- [FIRE_SERVICE_TEST_DATA.json](./FIRE_SERVICE_TEST_DATA.json) - Sample data for testing
+- [DUAL_REFERENCE_STRUCTURE.md](./DUAL_REFERENCE_STRUCTURE.md) - ⭐ Dual reference structure (Department + Subdivision)
+- [SUPERADMIN_AUTH_GUIDE.md](./SUPERADMIN_AUTH_GUIDE.md) - Super Admin authentication guide
+- [SUPERADMIN_CHANGES.md](./SUPERADMIN_CHANGES.md) - Super Admin model changes and migration guide
+
+**Station Management System:**
+- [STATION_MANAGEMENT_README.md](./STATION_MANAGEMENT_README.md) - ⭐ Complete Station Management System
+- [STATION_MANAGEMENT_TEST_DATA.json](./STATION_MANAGEMENT_TEST_DATA.json) - Test data for Station Management
 
 ## 🔌 API Endpoints
 

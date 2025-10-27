@@ -4,6 +4,13 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import stationRoutes from './routes/stationRoutes.js';
+import firePersonnelRoutes from './routes/firePersonnelRoutes.js';
+import departmentRoutes from './routes/departmentRoutes.js';
+import subdivisionRoutes from './routes/subdivisionRoutes.js';
+import roleRoutes from './routes/roleRoutes.js';
+import rankRoutes from './routes/rankRoutes.js';
+import superAdminRoutes from './routes/superAdminRoutes.js';
 import verifyToken from './middleware/verifyToken.js';
 import { swaggerUi, specs } from './swagger.js';
 
@@ -23,9 +30,21 @@ app.use(express.json());
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Routes
+// Authentication Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', verifyToken, profileRoutes);
+
+// Fire Service Routes (all protected)
+app.use('/api/fire/stations', verifyToken, stationRoutes);
+app.use('/api/fire/personnel', verifyToken, firePersonnelRoutes);
+app.use('/api/fire/departments', verifyToken, departmentRoutes);
+app.use('/api/fire/subdivisions', verifyToken, subdivisionRoutes);
+app.use('/api/fire/roles', verifyToken, roleRoutes);
+app.use('/api/fire/ranks', verifyToken, rankRoutes);
+
+// Super Admin routes (mixed - some public, some protected)
+// The routes file handles which ones need auth
+app.use('/api/fire/superadmin', superAdminRoutes);
 
 /**
  * @swagger

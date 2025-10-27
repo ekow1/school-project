@@ -1,0 +1,47 @@
+import mongoose from 'mongoose';
+
+const superAdminSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: [true, 'Username is required'],
+        unique: true,
+        trim: true,
+        lowercase: true
+    },
+    password: {
+        type: String,
+        required: [true, 'Password is required']
+    },
+    name: {
+        type: String,
+        required: [true, 'Name is required']
+    },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    // Optional fields for managing departments and stations
+    managedDepartments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department'
+    }],
+    managedStations: [{
+        type: String
+    }],
+    isActive: {
+        type: Boolean,
+        default: true
+    }
+}, { 
+    timestamps: true 
+});
+
+// Index for faster login queries
+superAdminSchema.index({ username: 1 });
+superAdminSchema.index({ email: 1 });
+
+export default mongoose.model('SuperAdmin', superAdminSchema);
+
