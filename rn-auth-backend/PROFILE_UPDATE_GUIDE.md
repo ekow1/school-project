@@ -1,7 +1,7 @@
 # Profile Update Guide
 
 ## Overview
-Users can now update **ALL** profile fields including the phone number through the `PUT /api/profile` endpoint.
+Users can now update **ALL** profile fields including the phone number through the `PATCH /api/profile` endpoint. PATCH allows partial updates - only the fields you send will be updated.
 
 ## Authentication Required
 All profile update operations require a valid JWT token in the Authorization header:
@@ -40,7 +40,7 @@ When updating the phone number:
 
 #### ✅ Valid Phone Update
 ```bash
-curl -X PUT https://auth.ekowlabs.space/api/profile \
+curl -X PATCH https://auth.ekowlabs.space/api/profile \
   -H "Authorization: Bearer <your-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -64,7 +64,7 @@ curl -X PUT https://auth.ekowlabs.space/api/profile \
 
 #### ❌ Invalid Phone Format
 ```bash
-curl -X PUT https://auth.ekowlabs.space/api/profile \
+curl -X PATCH https://auth.ekowlabs.space/api/profile \
   -H "Authorization: Bearer <your-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -81,7 +81,7 @@ curl -X PUT https://auth.ekowlabs.space/api/profile \
 
 #### ❌ Phone Already In Use
 ```bash
-curl -X PUT https://auth.ekowlabs.space/api/profile \
+curl -X PATCH https://auth.ekowlabs.space/api/profile \
   -H "Authorization: Bearer <your-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -105,7 +105,7 @@ curl -X PUT https://auth.ekowlabs.space/api/profile \
 const updateProfile = async (token, updates) => {
   try {
     const response = await fetch('https://auth.ekowlabs.space/api/profile', {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',

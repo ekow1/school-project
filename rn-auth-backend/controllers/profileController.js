@@ -38,8 +38,8 @@ export const updateProfile = async (req, res) => {
             }
         }
 
-        // Update fields if provided
-        if (name) user.name = name;
+        // Update fields only if provided (partial update)
+        if (name !== undefined) user.name = name;
         if (email !== undefined) user.email = email;
         if (address !== undefined) user.address = address;
         if (country !== undefined) user.country = country;

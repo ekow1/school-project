@@ -84,11 +84,11 @@ Authorization: Bearer <your-jwt-token>
   - `404` - User not found
   - `500` - Server error
 
-#### PUT /api/profile
-**Update user profile**
+#### PATCH /api/profile
+**Update user profile (partial update)**
 
 - **Authentication**: Required
-- **Request Body**: Any combination of updatable fields
+- **Request Body**: Any combination of updatable fields (only provided fields are updated)
   ```json
   {
     "name": "Jane Doe",

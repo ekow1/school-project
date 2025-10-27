@@ -80,6 +80,8 @@ Once the server is running, visit:
 - [API_FEATURES.md](./API_FEATURES.md) - Complete API features and endpoint details
 - [PROFILE_UPDATE_GUIDE.md](./PROFILE_UPDATE_GUIDE.md) - Comprehensive guide for updating user profiles
 - [VALIDATION_RULES.md](./VALIDATION_RULES.md) - Field validation rules and patterns
+- [AUTH_FLOW_EXPLANATION.md](./AUTH_FLOW_EXPLANATION.md) - How authentication and user ID extraction works
+- [PATCH_MIGRATION.md](./PATCH_MIGRATION.md) - Migration guide for PUT to PATCH change
 - [CHANGELOG_GHANAPOST.md](./CHANGELOG_GHANAPOST.md) - Recent changes and migration guide
 
 ## 🔌 API Endpoints
@@ -171,9 +173,9 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-#### Update User Profile
+#### Update User Profile (Partial Update)
 ```http
-PUT /api/profile
+PATCH /api/profile
 Authorization: Bearer <your-jwt-token>
 Content-Type: application/json
 

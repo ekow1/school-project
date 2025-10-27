@@ -47,10 +47,10 @@ router.get('/', getProfile);
 /**
  * @swagger
  * /api/profile:
- *   put:
- *     summary: Update user profile
+ *   patch:
+ *     summary: Update user profile (partial update)
  *     tags: [Profile]
- *     description: Update the authenticated user's profile information
+ *     description: Partially update the authenticated user's profile information. Only provided fields will be updated, other fields remain unchanged.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -131,7 +131,7 @@ router.get('/', getProfile);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/', updateProfile);
+router.patch('/', updateProfile);
 
 /**
  * @swagger
