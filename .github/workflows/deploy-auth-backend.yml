@@ -43,19 +43,18 @@ jobs:
         script: |
           echo "🔍 Checking if server is already set up..."
           
-          # Check if Node.js, PM2, and Caddy are installed
+          # Check if Node.js and Caddy are installed
           if command -v node &> /dev/null && command -v npm &> /dev/null && command -v caddy &> /dev/null; then
             echo "✅ Server is already set up!"
             echo "Node.js: $(node --version)"
             echo "npm: $(npm --version)"
             echo "Caddy: $(caddy version)"
             
-            # Check if PM2 is installed
+            # Clean up any PM2 processes if they exist
             if command -v pm2 &> /dev/null; then
-              echo "✅ PM2 is installed: $(pm2 --version)"
-            else
-              echo "⚠️ PM2 not found, installing..."
-              sudo npm install -g pm2
+              echo "⚠️ Cleaning up old PM2 process..."
+              pm2 delete auth-backend 2>/dev/null || true
+              pm2 save --force 2>/dev/null || true
             fi
             
             echo "✅ Server setup complete - skipping installation"
@@ -195,6 +194,9 @@ jobs:
 
         # Create logs directory
         mkdir -p rn-auth-backend/logs
+        
+        # Remove PM2 config (not needed with systemd)
+        rm -f rn-auth-backend/ecosystem.config.cjs
 
         # Create tarball of entire rn-auth-backend directory
         tar -czf auth-backend.tar.gz rn-auth-backend/
@@ -252,28 +254,43 @@ jobs:
           echo "📦 Installing production dependencies..."
           npm install --production
 
-          echo "🔄 Managing PM2 process..."
+          echo "🔄 Creating systemd service..."
           
-          # Check if PM2 process exists
-          if pm2 describe auth-backend > /dev/null 2>&1; then
-            echo "♻️ Restarting existing PM2 process..."
-            pm2 restart auth-backend
-          else
-            echo "✨ Starting new PM2 process..."
-            pm2 start ecosystem.config.cjs
-          fi
+          # Get current user and home directory
+          CURRENT_USER=$(whoami)
+          HOME_DIR=$(eval echo ~$CURRENT_USER)
           
-          # Save PM2 configuration
-          pm2 save
+          # Create systemd service file
+          sudo tee /etc/systemd/system/auth-backend.service << EOF
+          [Unit]
+          Description=Auth Backend Node.js Server
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/bin/node ${HOME_DIR}/school-project/backend/rn-auth-backend/server.js
+          Restart=always
+          User=${CURRENT_USER}
+          Environment=NODE_ENV=production
+          WorkingDirectory=${HOME_DIR}/school-project/backend/rn-auth-backend
+          StandardOutput=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/out.log
+          StandardError=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/err.log
+
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+
+          echo "🔄 Reloading systemd and restarting service..."
+          sudo systemctl daemon-reload
+          sudo systemctl enable auth-backend
+          sudo systemctl restart auth-backend
           
-          # Setup PM2 to start on system boot (only if not already set)
-          pm2 startup systemd -u $USER --hp /home/$USER || true
+          echo "⏳ Waiting for service to start..."
+          sleep 5
           
           echo "✅ Deployment completed successfully!"
           
-          # Show PM2 status
-          pm2 list
-          pm2 info auth-backend
+          echo "📊 Service status:"
+          sudo systemctl status auth-backend --no-pager
 
     - name: Health check
       uses: appleboy/ssh-action@v1.0.3
@@ -299,12 +316,8 @@ jobs:
           sleep 10
           
           echo ""
-          echo "📊 PM2 Status:"
-          pm2 list
-          
-          echo ""
-          echo "📋 PM2 Process Info:"
-          pm2 info auth-backend --no-color || echo "Process not found"
+          echo "📊 Systemd Service Status:"
+          sudo systemctl status auth-backend --no-pager
           
           echo ""
           echo "📝 Error Logs (last 50 lines):"
@@ -315,13 +328,25 @@ jobs:
           cat logs/out.log | tail -50 || echo "No output log"
           
           echo ""
+          echo "📝 Systemd Journal (last 30 lines):"
+          sudo journalctl -u auth-backend -n 30 --no-pager
+          
+          echo ""
+          # Check if service is active
+          if sudo systemctl is-active --quiet auth-backend; then
+            echo "✅ Service is running"
+          else
+            echo "❌ Service is not running"
+            exit 1
+          fi
+          
           # Check if API is responding
           if curl -f -s http://localhost:5000/api/health > /dev/null; then
             echo "✅ API is responding"
             curl -s http://localhost:5000/api/health | jq '.'
           else
             echo "❌ API not responding"
-            echo "This is expected - check logs above for the actual error"
+            echo "Check logs above for the error"
             exit 1
           fi
 
@@ -340,9 +365,9 @@ jobs:
         echo "  • GET /api/profile - Get user profile (requires auth)"
         echo "  • GET /api/health - Health check"
         echo ""
-        echo "🔧 Process Management:"
-        echo "  • pm2 list - View all processes"
-        echo "  • pm2 logs auth-backend - View logs"
-        echo "  • pm2 restart auth-backend - Restart app"
-        echo "  • pm2 monit - Monitor processes"
+        echo "🔧 Service Management:"
+        echo "  • sudo systemctl status auth-backend - Check status"
+        echo "  • sudo systemctl restart auth-backend - Restart service"
+        echo "  • sudo systemctl stop auth-backend - Stop service"
+        echo "  • sudo journalctl -u auth-backend -f - View logs"
 

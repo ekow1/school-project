@@ -177,15 +177,15 @@ Tokens are valid for 24 hours after login.
 # Development with auto-reload
 npm run dev
 
-# Production start
+# Production start (manual)
 npm start
 
-# PM2 process management (production)
-npm run pm2:start      # Start with PM2
-npm run pm2:stop       # Stop PM2 process
-npm run pm2:restart    # Restart PM2 process
-npm run pm2:logs       # View logs
-npm run pm2:monit      # Monitor process
+# Production service management (systemd)
+sudo systemctl start auth-backend    # Start service
+sudo systemctl stop auth-backend     # Stop service
+sudo systemctl restart auth-backend  # Restart service
+sudo systemctl status auth-backend   # Check status
+sudo journalctl -u auth-backend -f   # View logs in real-time
 ```
 
 ## 🚀 Production Deployment
@@ -236,8 +236,7 @@ rn-auth-backend/
 ├── routes/
 │   ├── authRoutes.js          # Auth endpoints
 │   └── profileRoutes.js       # Profile endpoints
-├── logs/                      # PM2 logs directory
-├── ecosystem.config.cjs       # PM2 configuration
+├── logs/                      # Application logs directory
 ├── install.sh                 # Server setup script
 ├── server.js                  # Main application file
 ├── swagger.js                 # API documentation config
