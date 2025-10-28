@@ -957,6 +957,284 @@ Tokens are valid for 7 days after login.
             },
           },
         },
+        // Fire Service Request/Response Schemas
+        DepartmentCreateRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Department name',
+              example: 'Operations',
+            },
+            station_id: {
+              type: 'string',
+              description: 'Station ID this department belongs to',
+              example: '507f1f77bcf86cd799439012',
+            },
+            description: {
+              type: 'string',
+              description: 'Department description',
+              example: 'Handles emergency response and fire fighting operations',
+            },
+          },
+        },
+        DepartmentResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Department created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/Department',
+            },
+          },
+        },
+        FirePersonnelCreateRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Personnel name',
+              example: 'Kwame Mensah',
+            },
+            rank: {
+              type: 'string',
+              description: 'Rank ID',
+              example: '507f1f77bcf86cd799439011',
+            },
+            department: {
+              type: 'string',
+              description: 'Department ID',
+              example: '507f1f77bcf86cd799439012',
+            },
+            subdivision: {
+              type: 'string',
+              description: 'Subdivision ID',
+              example: '507f1f77bcf86cd799439013',
+            },
+            role: {
+              type: 'string',
+              description: 'Role ID',
+              example: '507f1f77bcf86cd799439014',
+            },
+            station_id: {
+              type: 'string',
+              description: 'Station ID',
+              example: '507f1f77bcf86cd799439015',
+            },
+            station: {
+              type: 'string',
+              description: 'Station name',
+              example: 'Accra Central Fire Station',
+            },
+            region: {
+              type: 'string',
+              description: 'Region',
+              example: 'Greater Accra',
+            },
+            watchroom: {
+              type: 'string',
+              description: 'Watchroom (required for Operations department)',
+              example: 'Watch Room 1',
+            },
+            crew: {
+              type: 'string',
+              description: 'Crew (required for Operations department)',
+              example: 'Crew 1',
+            },
+          },
+        },
+        FirePersonnelResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Fire personnel created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/FirePersonnel',
+            },
+          },
+        },
+        SubdivisionCreateRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Subdivision name',
+              example: 'Watch A',
+            },
+            color: {
+              type: 'string',
+              description: 'Subdivision color',
+              example: '#FF0000',
+            },
+            department: {
+              type: 'string',
+              description: 'Department ID',
+              example: '507f1f77bcf86cd799439011',
+            },
+          },
+        },
+        SubdivisionResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Subdivision created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/Subdivision',
+            },
+          },
+        },
+        RankCreateRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Rank name',
+              example: 'Chief Fire Officer',
+            },
+            initials: {
+              type: 'string',
+              description: 'Rank initials',
+              example: 'CFO',
+            },
+          },
+        },
+        RankResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Rank created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/Rank',
+            },
+          },
+        },
+        RoleCreateRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Role name',
+              example: 'Operations Officer',
+            },
+          },
+        },
+        RoleResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Role created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/Role',
+            },
+          },
+        },
+        SuperAdminCreateRequest: {
+          type: 'object',
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Admin username',
+              example: 'admin1',
+            },
+            password: {
+              type: 'string',
+              description: 'Admin password',
+              example: 'securePassword123',
+            },
+            name: {
+              type: 'string',
+              description: 'Admin full name',
+              example: 'Dr. Emmanuel Ofosu',
+            },
+            email: {
+              type: 'string',
+              description: 'Admin email',
+              example: 'emmanuel.ofosu@fireservice.gov.gh',
+            },
+          },
+        },
+        SuperAdminLoginRequest: {
+          type: 'object',
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Admin username',
+              example: 'admin1',
+            },
+            password: {
+              type: 'string',
+              description: 'Admin password',
+              example: 'securePassword123',
+            },
+          },
+        },
+        SuperAdminResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Super admin created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/SuperAdmin',
+            },
+          },
+        },
+        SuperAdminAuthResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Login successful',
+            },
+            token: {
+              type: 'string',
+              description: 'JWT token for authentication',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+            admin: {
+              $ref: '#/components/schemas/SuperAdmin',
+            },
+          },
+        },
       },
     },
   },

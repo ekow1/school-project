@@ -5,6 +5,9 @@ import mongoose from 'mongoose';
 export const createStation = async (req, res) => {
     try {
         const { name, call_sign, location, location_url, coordinates, region, phone_number } = req.body;
+        
+        console.log('Received request body:', req.body);
+        console.log('Extracted coordinates:', coordinates);
 
         // Validate coordinates if provided (basic validation only)
         if (coordinates && typeof coordinates !== 'object') {
@@ -82,16 +85,17 @@ export const createStation = async (req, res) => {
         }
 
         // Create new station if not found
-        const stationData = { name, call_sign, location, location_url, region, phone_number,coordinates};
+        const stationData = { name, call_sign, location, location_url, region, phone_number };
         
-        
+        // Always add coordinates if they exist (even if empty object)
+        if (coordinates !== undefined && coordinates !== null) {
+            stationData.coordinates = coordinates;
+            console.log('Adding coordinates to stationData:', coordinates);
+        }
         
         console.log('Final stationData before creating Station:', stationData);
-        const station = new Station(stationData);
-        console.log('Station object after creation:', station.toObject());
-        
-        await station.save();
-        console.log('Station object after save:', station.toObject());
+        const station = await Station.create(stationData);
+        console.log('Station created with coordinates:', station.coordinates);
 
         res.status(201).json({
             success: true,
@@ -212,8 +216,7 @@ export const bulkCreateStations = async (req, res) => {
                     }
                 } else {
                     // Create new station
-                    const station = new Station({ name, call_sign, location, location_url, coordinates, region, phone_number });
-                    await station.save();
+                    const station = await Station.create({ name, call_sign, location, location_url, coordinates, region, phone_number });
 
                     results.created.push({
                         index: i,
