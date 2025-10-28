@@ -10,7 +10,10 @@ import departmentRoutes from './routes/departmentRoutes.js';
 import subdivisionRoutes from './routes/subdivisionRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import rankRoutes from './routes/rankRoutes.js';
+import superAdminRoutes from './routes/superAdminRoutes.js';
 import otpRoutes from './routes/otpRoutes.js';
+import verifyToken from './middleware/verifyToken.js';
+import { swaggerUi, specs } from './swagger.js';
 
 dotenv.config();
 const app = express();
