@@ -24,8 +24,18 @@ const stationSchema = new mongoose.Schema({
         trim: true
     },
     coordinates: {
-        type: mongoose.Schema.Types.Mixed,
-        required: false
+        lat: {
+            type: Number,
+            required: false,
+            min: -90,
+            max: 90
+        },
+        lng: {
+            type: Number,
+            required: false,
+            min: -180,
+            max: 180
+        }
     },
     region: {
         type: String,

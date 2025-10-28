@@ -4,37 +4,19 @@ import mongoose from 'mongoose';
 // Create Station (with upsert functionality)
 export const createStation = async (req, res) => {
     try {
-        const { name, call_sign, location, location_url, coordinates, region, phone_number } = req.body;
-        
-        console.log('Received request body:', req.body);
-        console.log('Extracted coordinates:', coordinates);
+        const { name, location, location_url, phone_number, coordinates } = req.body;
 
-        // Validate coordinates if provided (basic validation only)
-        if (coordinates && typeof coordinates !== 'object') {
-            return res.status(400).json({
-                success: false,
-                message: 'Coordinates must be an object'
-            });
-        }
-
-        // Check if station already exists based on location, coordinates, or phone number
+        // Check if station already exists based on location or phone number
         let existingStation = null;
         
-        // Check by coordinates (most reliable) - compare entire coordinates object
-        if (coordinates) {
-            existingStation = await Station.findOne({
-                coordinates: coordinates
-            });
-        }
-        
-        // Check by location if coordinates not found
-        if (!existingStation && location) {
+        // Check by location
+        if (location) {
             existingStation = await Station.findOne({
                 location: { $regex: new RegExp(location, 'i') }
             });
         }
         
-        // Check by phone number if still not found
+        // Check by phone number if location not found
         if (!existingStation && phone_number) {
             existingStation = await Station.findOne({
                 phone_number: phone_number
@@ -46,20 +28,17 @@ export const createStation = async (req, res) => {
             const updateData = {};
             
             if (name && !existingStation.name) updateData.name = name;
-            if (call_sign && !existingStation.call_sign) updateData.call_sign = call_sign;
             if (location && !existingStation.location) updateData.location = location;
             if (location_url && !existingStation.location_url) updateData.location_url = location_url;
-            // Update coordinates if provided and different from existing
-            if (coordinates) {
-                const needsUpdate = !existingStation.coordinates || 
-                    JSON.stringify(existingStation.coordinates) !== JSON.stringify(coordinates);
-                
-                if (needsUpdate) {
-                    updateData.coordinates = coordinates;
-                }
-            }
-            if (region && !existingStation.region) updateData.region = region;
             if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
+            
+            // Update coordinates if provided
+            if (coordinates) {
+                updateData.coordinates = {
+                    lat: coordinates.latitude,
+                    lng: coordinates.longitude
+                };
+            }
 
             if (Object.keys(updateData).length > 0) {
                 const updatedStation = await Station.findByIdAndUpdate(
@@ -85,17 +64,17 @@ export const createStation = async (req, res) => {
         }
 
         // Create new station if not found
-        const stationData = { name, call_sign, location, location_url, region, phone_number };
-        
-        // Always add coordinates if they exist (even if empty object)
-        if (coordinates !== undefined && coordinates !== null) {
-            stationData.coordinates = coordinates;
-            console.log('Adding coordinates to stationData:', coordinates);
-        }
-        
-        console.log('Final stationData before creating Station:', stationData);
-        const station = await Station.create(stationData);
-        console.log('Station created with coordinates:', station.coordinates);
+        const station = new Station({
+            name,
+            location,
+            location_url,
+            phone_number,
+            coordinates: coordinates
+                ? { lat: coordinates.latitude, lng: coordinates.longitude }
+                : undefined
+        });
+
+        await station.save();
 
         res.status(201).json({
             success: true,
