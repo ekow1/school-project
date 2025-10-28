@@ -6,55 +6,21 @@ export const createStation = async (req, res) => {
     try {
         const { name, call_sign, location, location_url, coordinates, region, phone_number } = req.body;
 
-        // Validate coordinates if provided
-        if (coordinates) {
-            // Handle both lat/lng and latitude/longitude formats
-            let latitude, longitude;
-            
-            if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                latitude = coordinates.latitude;
-                longitude = coordinates.longitude;
-            } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                latitude = coordinates.lat;
-                longitude = coordinates.lng;
-            } else {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Coordinates must include latitude/longitude or lat/lng'
-                });
-            }
-
-            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Coordinates must be numbers (latitude and longitude)'
-                });
-            }
-            if (latitude < -90 || latitude > 90) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Latitude must be between -90 and 90'
-                });
-            }
-            if (longitude < -180 || longitude > 180) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Longitude must be between -180 and 180'
-                });
-            }
-
-            // Normalize coordinates to latitude/longitude format
-            coordinates = { latitude, longitude };
+        // Validate coordinates if provided (basic validation only)
+        if (coordinates && typeof coordinates !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Coordinates must be an object'
+            });
         }
 
         // Check if station already exists based on location, coordinates, or phone number
         let existingStation = null;
         
-        // Check by coordinates (most reliable) - use normalized coordinates
-        if (coordinates && coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
+        // Check by coordinates (most reliable) - compare entire coordinates object
+        if (coordinates) {
             existingStation = await Station.findOne({
-                'coordinates.latitude': coordinates.latitude,
-                'coordinates.longitude': coordinates.longitude
+                coordinates: coordinates
             });
         }
         
@@ -83,10 +49,7 @@ export const createStation = async (req, res) => {
             // Update coordinates if provided and different from existing
             if (coordinates) {
                 const needsUpdate = !existingStation.coordinates || 
-                    !existingStation.coordinates.latitude || 
-                    !existingStation.coordinates.longitude ||
-                    existingStation.coordinates.latitude !== coordinates.latitude || 
-                    existingStation.coordinates.longitude !== coordinates.longitude;
+                    JSON.stringify(existingStation.coordinates) !== JSON.stringify(coordinates);
                 
                 if (needsUpdate) {
                     updateData.coordinates = coordinates;
@@ -124,10 +87,15 @@ export const createStation = async (req, res) => {
         // Only add coordinates if they exist
         if (coordinates) {
             stationData.coordinates = coordinates;
+            console.log('Adding coordinates to stationData:', coordinates);
         }
         
+        console.log('Final stationData before creating Station:', stationData);
         const station = new Station(stationData);
+        console.log('Station object after creation:', station.toObject());
+        
         await station.save();
+        console.log('Station object after save:', station.toObject());
 
         res.status(201).json({
             success: true,
@@ -173,63 +141,23 @@ export const bulkCreateStations = async (req, res) => {
                 const stationData = stations[i];
                 const { name, call_sign, location, location_url, coordinates, region, phone_number } = stationData;
 
-                // Validate coordinates if provided
-                if (coordinates) {
-                    // Handle both lat/lng and latitude/longitude formats
-                    let latitude, longitude;
-                    
-                    if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                        latitude = coordinates.latitude;
-                        longitude = coordinates.longitude;
-                    } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                        latitude = coordinates.lat;
-                        longitude = coordinates.lng;
-                    } else {
-                        results.errors.push({
-                            index: i,
-                            data: stationData,
-                            error: 'Coordinates must include latitude/longitude or lat/lng'
-                        });
-                        continue;
-                    }
-
-                    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-                        results.errors.push({
-                            index: i,
-                            data: stationData,
-                            error: 'Coordinates must be numbers (latitude and longitude)'
-                        });
-                        continue;
-                    }
-                    if (latitude < -90 || latitude > 90) {
-                        results.errors.push({
-                            index: i,
-                            data: stationData,
-                            error: 'Latitude must be between -90 and 90'
-                        });
-                        continue;
-                    }
-                    if (longitude < -180 || longitude > 180) {
-                        results.errors.push({
-                            index: i,
-                            data: stationData,
-                            error: 'Longitude must be between -180 and 180'
-                        });
-                        continue;
-                    }
-
-                    // Normalize coordinates to latitude/longitude format
-                    stationData.coordinates = { latitude, longitude };
+                // Validate coordinates if provided (basic validation only)
+                if (coordinates && typeof coordinates !== 'object') {
+                    results.errors.push({
+                        index: i,
+                        data: stationData,
+                        error: 'Coordinates must be an object'
+                    });
+                    continue;
                 }
 
                 // Check if station already exists
                 let existingStation = null;
                 
-                // Check by coordinates (most reliable) - use normalized coordinates
-                if (stationData.coordinates && stationData.coordinates.latitude !== undefined && stationData.coordinates.longitude !== undefined) {
+                // Check by coordinates (most reliable) - compare entire coordinates object
+                if (stationData.coordinates) {
                     existingStation = await Station.findOne({
-                        'coordinates.latitude': stationData.coordinates.latitude,
-                        'coordinates.longitude': stationData.coordinates.longitude
+                        coordinates: stationData.coordinates
                     });
                 }
                 
@@ -258,10 +186,7 @@ export const bulkCreateStations = async (req, res) => {
                     // Update coordinates if provided and different from existing
                     if (stationData.coordinates) {
                         const needsUpdate = !existingStation.coordinates || 
-                            !existingStation.coordinates.latitude || 
-                            !existingStation.coordinates.longitude ||
-                            existingStation.coordinates.latitude !== stationData.coordinates.latitude || 
-                            existingStation.coordinates.longitude !== stationData.coordinates.longitude;
+                            JSON.stringify(existingStation.coordinates) !== JSON.stringify(stationData.coordinates);
                         
                         if (needsUpdate) {
                             updateData.coordinates = stationData.coordinates;
@@ -403,45 +328,12 @@ export const updateStation = async (req, res) => {
 
         const { coordinates } = req.body;
 
-        // Validate coordinates if provided
-        if (coordinates) {
-            // Handle both lat/lng and latitude/longitude formats
-            let latitude, longitude;
-            
-            if (coordinates.latitude !== undefined && coordinates.longitude !== undefined) {
-                latitude = coordinates.latitude;
-                longitude = coordinates.longitude;
-            } else if (coordinates.lat !== undefined && coordinates.lng !== undefined) {
-                latitude = coordinates.lat;
-                longitude = coordinates.lng;
-            } else {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Coordinates must include latitude/longitude or lat/lng'
-                });
-            }
-
-            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Coordinates must be numbers (latitude and longitude)'
-                });
-            }
-            if (latitude < -90 || latitude > 90) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Latitude must be between -90 and 90'
-                });
-            }
-            if (longitude < -180 || longitude > 180) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Longitude must be between -180 and 180'
-                });
-            }
-
-            // Normalize coordinates to latitude/longitude format
-            req.body.coordinates = { latitude, longitude };
+        // Validate coordinates if provided (basic validation only)
+        if (coordinates && typeof coordinates !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Coordinates must be an object'
+            });
         }
 
         const station = await Station.findByIdAndUpdate(

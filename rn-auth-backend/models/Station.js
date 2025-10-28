@@ -24,18 +24,8 @@ const stationSchema = new mongoose.Schema({
         trim: true
     },
     coordinates: {
-        latitude: {
-            type: Number,
-            required: false,
-            min: -90,
-            max: 90
-        },
-        longitude: {
-            type: Number,
-            required: false,
-            min: -180,
-            max: 180
-        }
+        type: mongoose.Schema.Types.Mixed,
+        required: false
     },
     region: {
         type: String,
@@ -70,6 +60,5 @@ stationSchema.virtual('personnel', {
 // Index for efficient queries
 stationSchema.index({ call_sign: 1 });
 stationSchema.index({ region: 1 });
-stationSchema.index({ 'coordinates.latitude': 1, 'coordinates.longitude': 1 });
 
 export default mongoose.model('Station', stationSchema);
