@@ -80,11 +80,17 @@ export const createStation = async (req, res) => {
             if (call_sign && !existingStation.call_sign) updateData.call_sign = call_sign;
             if (location && !existingStation.location) updateData.location = location;
             if (location_url && !existingStation.location_url) updateData.location_url = location_url;
-            // Only update coordinates if existing doesn't have them or new ones are different
-            if (coordinates && (!existingStation.coordinates || 
-                (existingStation.coordinates.latitude !== coordinates.latitude || 
-                 existingStation.coordinates.longitude !== coordinates.longitude))) {
-                updateData.coordinates = coordinates;
+            // Update coordinates if provided and different from existing
+            if (coordinates) {
+                const needsUpdate = !existingStation.coordinates || 
+                    !existingStation.coordinates.latitude || 
+                    !existingStation.coordinates.longitude ||
+                    existingStation.coordinates.latitude !== coordinates.latitude || 
+                    existingStation.coordinates.longitude !== coordinates.longitude;
+                
+                if (needsUpdate) {
+                    updateData.coordinates = coordinates;
+                }
             }
             if (region && !existingStation.region) updateData.region = region;
             if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
@@ -113,7 +119,14 @@ export const createStation = async (req, res) => {
         }
 
         // Create new station if not found
-        const station = new Station({ name, call_sign, location, location_url, coordinates, region, phone_number });
+        const stationData = { name, call_sign, location, location_url, region, phone_number };
+        
+        // Only add coordinates if they exist
+        if (coordinates) {
+            stationData.coordinates = coordinates;
+        }
+        
+        const station = new Station(stationData);
         await station.save();
 
         res.status(201).json({
@@ -242,11 +255,17 @@ export const bulkCreateStations = async (req, res) => {
                     if (call_sign && !existingStation.call_sign) updateData.call_sign = call_sign;
                     if (location && !existingStation.location) updateData.location = location;
                     if (location_url && !existingStation.location_url) updateData.location_url = location_url;
-                    // Only update coordinates if existing doesn't have them or new ones are different
-                    if (stationData.coordinates && (!existingStation.coordinates || 
-                        (existingStation.coordinates.latitude !== stationData.coordinates.latitude || 
-                         existingStation.coordinates.longitude !== stationData.coordinates.longitude))) {
-                        updateData.coordinates = stationData.coordinates;
+                    // Update coordinates if provided and different from existing
+                    if (stationData.coordinates) {
+                        const needsUpdate = !existingStation.coordinates || 
+                            !existingStation.coordinates.latitude || 
+                            !existingStation.coordinates.longitude ||
+                            existingStation.coordinates.latitude !== stationData.coordinates.latitude || 
+                            existingStation.coordinates.longitude !== stationData.coordinates.longitude;
+                        
+                        if (needsUpdate) {
+                            updateData.coordinates = stationData.coordinates;
+                        }
                     }
                     if (region && !existingStation.region) updateData.region = region;
                     if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
