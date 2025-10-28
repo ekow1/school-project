@@ -11,7 +11,7 @@ import subdivisionRoutes from './routes/subdivisionRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import rankRoutes from './routes/rankRoutes.js';
 import superAdminRoutes from './routes/superAdminRoutes.js';
-import otpRoutes from './routes/otpRoutes.js';
+import fireReportRoutes from './routes/fireReportRoutes.js';
 import verifyToken from './middleware/verifyToken.js';
 import { swaggerUi, specs } from './swagger.js';
 
@@ -35,8 +35,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', verifyToken, profileRoutes);
 
-// OTP Routes (public - no auth required)
-app.use('/api/otp', otpRoutes);
+// // OTP Routes (public - no auth required)
+// app.use('/api/otp', otpRoutes);
 
 // Fire Service Routes (all protected)
 app.use('/api/fire/stations', verifyToken, stationRoutes);
@@ -45,10 +45,10 @@ app.use('/api/fire/departments', verifyToken, departmentRoutes);
 app.use('/api/fire/subdivisions', verifyToken, subdivisionRoutes);
 app.use('/api/fire/roles', verifyToken, roleRoutes);
 app.use('/api/fire/ranks', verifyToken, rankRoutes);
+app.use('/api/fire/reports',  fireReportRoutes);
 
 // Super Admin routes (mixed - some public, some protected)
 // The routes file handles which ones need auth
-app.use('/api/fire/superadmin', superAdminRoutes);
 
 /**
  * @swagger

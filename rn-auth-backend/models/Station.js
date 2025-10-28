@@ -44,6 +44,13 @@ const stationSchema = new mongoose.Schema({
         type: String,
         required: false,
         trim: true
+    },
+    placeId: {
+        type: String,
+        required: false,
+        trim: true,
+        unique: true,
+        sparse: true
     }
 }, { 
     timestamps: true,

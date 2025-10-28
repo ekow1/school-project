@@ -618,6 +618,11 @@ Tokens are valid for 24 hours after login.
               description: 'Station phone number',
               example: '+233302123456',
             },
+            placeId: {
+              type: 'string',
+              description: 'Google Places API place ID (unique identifier for the location)',
+              example: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
+            },
             departments: {
               type: 'array',
               description: 'Departments in this station',
@@ -688,6 +693,11 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Station phone number',
               example: '+233302123456',
+            },
+            placeId: {
+              type: 'string',
+              description: 'Google Places API place ID (unique identifier for the location)',
+              example: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
             },
           },
         },

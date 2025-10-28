@@ -37,9 +37,15 @@ const mapCoordinates = (latitude, longitude) => {
 
 // Helper function to find existing station
 const findExistingStation = async (data) => {
-    const { location, phone_number, latitude, longitude } = data;
+    const { location, phone_number, latitude, longitude, placeId } = data;
     
-    // Check by coordinates first (most reliable)
+    // Check by placeId first (most reliable for Google Places)
+    if (placeId) {
+        const station = await Station.findOne({ placeId });
+        if (station) return station;
+    }
+    
+    // Check by coordinates (most reliable for GPS)
     if (latitude !== undefined && longitude !== undefined) {
         const station = await Station.findOne({
             lat: latitude,
@@ -73,7 +79,7 @@ export const createStation = async (req, res) => {
         // Log the incoming request body
         console.log('🚀 CREATE STATION - Request Body:', JSON.stringify(req.body, null, 2));
         
-        const { name, location, location_url, phone_number, latitude, longitude } = req.body;
+        const { name, location, location_url, phone_number, latitude, longitude, placeId } = req.body;
         
         // Log extracted values
         console.log('📋 Extracted values:', {
@@ -82,7 +88,8 @@ export const createStation = async (req, res) => {
             location_url,
             phone_number,
             latitude,
-            longitude
+            longitude,
+            placeId
         });
         
         // Validate coordinates
@@ -96,7 +103,7 @@ export const createStation = async (req, res) => {
         }
         
         // Check if station already exists
-        const existingStation = await findExistingStation({ location, phone_number, latitude, longitude });
+        const existingStation = await findExistingStation({ location, phone_number, latitude, longitude, placeId });
         
         if (existingStation) {
             console.log('🔄 Found existing station:', existingStation._id);
@@ -108,6 +115,7 @@ export const createStation = async (req, res) => {
             if (location && !existingStation.location) updateData.location = location;
             if (location_url && !existingStation.location_url) updateData.location_url = location_url;
             if (phone_number && !existingStation.phone_number) updateData.phone_number = phone_number;
+            if (placeId && !existingStation.placeId) updateData.placeId = placeId;
             
             // Update coordinates
             const coordinateData = mapCoordinates(latitude, longitude);
@@ -148,6 +156,7 @@ export const createStation = async (req, res) => {
             location,
             location_url,
             phone_number,
+            placeId,
             ...mapCoordinates(latitude, longitude)
         };
         
