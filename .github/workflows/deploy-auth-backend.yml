@@ -275,11 +275,9 @@ jobs:
           [Service]
           ExecStart=/usr/bin/node ${HOME_DIR}/school-project/backend/rn-auth-backend/server.js
           Restart=always
+          RestartSec=5
           User=${CURRENT_USER}
-          Environment=NODE_ENV=production
-          Environment=MONGODB_URI=${{ secrets.MONGODB_URI }}
-          Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}
-          Environment=ARKSEND=${{ secrets.ARKSEND }}
+          EnvironmentFile=${HOME_DIR}/school-project/backend/rn-auth-backend/.env
           WorkingDirectory=${HOME_DIR}/school-project/backend/rn-auth-backend
           StandardOutput=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/out.log
           StandardError=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/err.log

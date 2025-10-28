@@ -320,17 +320,22 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Sever running');
+    res.send('Server running');
 });
 
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI).then(() => {
-    console.log('MongoDB connected');
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+    console.log('✅ MongoDB connected successfully');
     app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Local: http://localhost:${PORT}`);
-        console.log(`Network: http://192.168.117.54:${PORT}`);
-        console.log(`Android Emulator: http://10.0.2.2:${PORT}`);
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📍 Local: http://localhost:${PORT}`);
+        console.log(`🌐 Network: http://0.0.0.0:${PORT}`);
+        console.log(`📱 API Base: http://localhost:${PORT}/api`);
+        console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
     });
-}).catch(err => console.log(err));
+}).catch(err => {
+    console.error('❌ MongoDB connection failed:', err.message);
+    console.error('🔍 Check your MONGODB_URI environment variable');
+    process.exit(1);
+});
