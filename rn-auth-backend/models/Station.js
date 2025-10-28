@@ -65,8 +65,7 @@ stationSchema.virtual('personnel', {
     foreignField: 'station_id'
 });
 
-// Index for efficient queries
-stationSchema.index({ call_sign: 1 });
+// Index for efficient queries (call_sign already has unique index)
 stationSchema.index({ region: 1 });
 
 export default mongoose.model('Station', stationSchema);

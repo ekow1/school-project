@@ -39,9 +39,7 @@ const superAdminSchema = new mongoose.Schema({
     timestamps: true 
 });
 
-// Index for faster login queries
-superAdminSchema.index({ username: 1 });
-superAdminSchema.index({ email: 1 });
+// Indexes are automatically created by unique: true on username and email fields
 
 export default mongoose.model('SuperAdmin', superAdminSchema);
 
