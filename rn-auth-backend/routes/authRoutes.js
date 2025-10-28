@@ -16,7 +16,7 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user (Step 1 of 3)
  *     tags: [Authentication]
- *     description: Create a new user account with phone, name, password, and optional fields. OTP verification temporarily disabled.
+ *     description: Create a new user account with phone, name, password, and optional fields.
  *     requestBody:
  *       required: true
  *       content:
@@ -113,7 +113,7 @@ router.post('/register', register);
  *   post:
  *     summary: Login user (Step 3 of 3)
  *     tags: [Authentication]
- *     description: Authenticate user with phone and password. Returns JWT token valid for 24 hours.
+ *     description: Authenticate user with phone and password. Returns JWT token.
  *     requestBody:
  *       required: true
  *       content:
@@ -412,7 +412,7 @@ router.post('/reset-password', resetPassword);
  *   post:
  *     summary: Verify phone number with OTP (Step 2 of 3)
  *     tags: [Authentication]
- *     description: Verify phone number for newly registered users using OTP. Temporarily disabled.
+ *     description: Verify phone number for newly registered users using OTP.
  *     requestBody:
  *       required: true
  *       content:

@@ -4,10 +4,7 @@ const fireReportSchema = new mongoose.Schema({
     incidentType: {
         type: String,
         required: [true, 'Incident type is required'],
-        enum: {
-            values: ['fire', 'rescue', 'medical', 'other'],
-            message: 'Incident type must be one of: fire, rescue, medical, other'
-        }
+        trim: true
     },
     incidentName: {
         type: String,
