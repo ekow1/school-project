@@ -82,13 +82,9 @@ export const createStation = async (req, res) => {
         }
 
         // Create new station if not found
-        const stationData = { name, call_sign, location, location_url, region, phone_number };
+        const stationData = { name, call_sign, location, location_url, region, phone_number,coordinates};
         
-        // Only add coordinates if they exist
-        if (coordinates) {
-            stationData.coordinates = coordinates;
-            console.log('Adding coordinates to stationData:', coordinates);
-        }
+        
         
         console.log('Final stationData before creating Station:', stationData);
         const station = new Station(stationData);

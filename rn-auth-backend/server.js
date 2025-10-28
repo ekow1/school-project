@@ -70,8 +70,8 @@ app.use('/api/fire/superadmin', superAdminRoutes);
  *                 location: "Central Business District, Accra"
  *                 location_url: "https://maps.google.com/?q=5.6037,-0.1870"
  *                 coordinates:
- *                   lat: 5.6037
- *                   lng: -0.1870
+ *                   latitude: 5.6037
+ *                   longitude: -0.1870
  *                 region: "Greater Accra"
  *                 phone_number: "+233302123456"
  *             minimal_station:
@@ -156,14 +156,14 @@ app.use('/api/fire/superadmin', superAdminRoutes);
  *                   - name: "Accra Central Fire Station"
  *                     location: "Central Business District, Accra"
  *                     coordinates:
- *                       lat: 5.6037
- *                       lng: -0.1870
+ *                       latitude: 5.6037
+ *                       longitude: -0.1870
  *                     phone_number: "+233302123456"
  *                   - name: "Kumasi Fire Station"
  *                     location: "Central Kumasi"
  *                     coordinates:
- *                       lat: 6.6885
- *                       lng: -1.6244
+ *                       latitude: 6.6885
+ *                       longitude: -1.6244
  *                     phone_number: "+233322123456"
  *     responses:
  *       200:

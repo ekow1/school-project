@@ -506,22 +506,12 @@ Tokens are valid for 7 days after login.
             },
             coordinates: {
               type: 'object',
-              properties: {
-                lat: {
-                  type: 'number',
-                  minimum: -90,
-                  maximum: 90,
-                  description: 'Latitude',
-                  example: 5.6037,
-                },
-                lng: {
-                  type: 'number',
-                  minimum: -180,
-                  maximum: 180,
-                  description: 'Longitude',
-                  example: -0.1870,
-                },
+              description: 'Station coordinates (flexible object format - accepts any coordinate structure)',
+              example: {
+                latitude: 5.6037,
+                longitude: -0.1870
               },
+              additionalProperties: true
             },
             region: {
               type: 'string',
@@ -584,22 +574,12 @@ Tokens are valid for 7 days after login.
             },
             coordinates: {
               type: 'object',
-              properties: {
-                lat: {
-                  type: 'number',
-                  minimum: -90,
-                  maximum: 90,
-                  description: 'Latitude',
-                  example: 5.6037,
-                },
-                lng: {
-                  type: 'number',
-                  minimum: -180,
-                  maximum: 180,
-                  description: 'Longitude',
-                  example: -0.1870,
-                },
+              description: 'Station coordinates (flexible object format - accepts any coordinate structure)',
+              example: {
+                latitude: 5.6037,
+                longitude: -0.1870
               },
+              additionalProperties: true
             },
             region: {
               type: 'string',
