@@ -4,8 +4,8 @@ import {
     login, 
     sendRegistrationOTP, 
     forgotPassword, 
-    resetPassword, 
-    verifyPhone 
+    resetPassword
+    // verifyPhone - TEMPORARILY COMMENTED OUT
 } from '../controllers/authController.js';
 
 const router = express.Router();
@@ -503,6 +503,7 @@ router.post('/reset-password', resetPassword);
  *             example:
  *               message: "Internal server error"
  */
-router.post('/verify-phone', verifyPhone);
+// TEMPORARILY COMMENTED OUT - OTP VERIFICATION DISABLED
+// router.post('/verify-phone', verifyPhone);
 
 export default router;
