@@ -13,7 +13,8 @@ const options = {
 A comprehensive backend API for managing Ghana National Fire Service stations, departments, and personnel built with Node.js, Express, and MongoDB.
 
 ### Features
-- **Authentication System**: User registration, login, and profile management
+- **Authentication System**: User registration, login, and profile management with OTP verification
+- **OTP Management**: SMS-based verification using Arkesel SMS API
 - **Station Management**: Complete CRUD operations with intelligent upsert functionality
 - **Department Management**: Station-based department organization
 - **Personnel Management**: Fire service personnel with dual reference structure
@@ -23,6 +24,25 @@ A comprehensive backend API for managing Ghana National Fire Service stations, d
 - **Data Validation**: Comprehensive validation with meaningful error messages
 - **JWT Authentication**: Secure token-based authentication
 - **Ghana Post GPS**: Support for Ghana Post digital addressing
+- **Phone Verification**: SMS OTP verification for account activation and password reset
+
+### Authentication Flow
+**3-Step Registration Process:**
+1. **Register** → Creates inactive user account and sends OTP
+2. **Verify Phone** → Verifies OTP and activates account
+3. **Login** → Authenticates with phone and password
+
+**Password Reset Flow:**
+1. **Forgot Password** → Sends OTP to registered phone
+2. **Reset Password** → Verifies OTP and updates password
+
+### OTP Service
+- **Provider**: Arkesel SMS API
+- **Environment Variable**: ARKSEND (API key)
+- **Purposes**: registration, password_reset, phone_verification
+- **Expiry**: 5 minutes (configurable)
+- **Max Attempts**: 5 per OTP
+- **Rate Limiting**: 2-minute cooldown between requests
 
 ### Authentication
 Protected routes require a Bearer token in the Authorization header:
@@ -30,7 +50,7 @@ Protected routes require a Bearer token in the Authorization header:
 Authorization: Bearer <your-jwt-token>
 \`\`\`
 
-Tokens are valid for 7 days after login.
+Tokens are valid for 24 hours after login.
 
 ### Base URL
 - **Production**: https://auth.ekowlabs.space
@@ -47,7 +67,11 @@ Tokens are valid for 7 days after login.
     tags: [
       {
         name: 'Authentication',
-        description: 'User authentication endpoints (register and login)',
+        description: 'User authentication endpoints with OTP verification. 3-step flow: Register → Verify Phone → Login',
+      },
+      {
+        name: 'OTP Management',
+        description: 'SMS OTP generation, verification, and management using Arkesel SMS API. Supports registration, password reset, and phone verification.',
       },
       {
         name: 'Profile',
@@ -132,6 +156,57 @@ Tokens are valid for 7 days after login.
             address: {
               type: 'string',
               description: 'The user address',
+            },
+            country: {
+              type: 'string',
+              description: 'User country (defaults to Ghana)',
+              example: 'Ghana',
+            },
+            dob: {
+              type: 'string',
+              format: 'date',
+              description: 'Date of birth',
+              example: '1992-05-15',
+            },
+            image: {
+              type: 'string',
+              description: 'Profile image URL',
+              example: 'https://example.com/profile.jpg',
+            },
+            ghanaPost: {
+              type: 'string',
+              description: 'Ghana Post GPS digital address',
+              example: 'GA-184-1234',
+            },
+            isPhoneVerified: {
+              type: 'boolean',
+              description: 'Phone verification status',
+              example: false,
+            },
+            phoneVerifiedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Phone verification timestamp',
+            },
+            isActive: {
+              type: 'boolean',
+              description: 'Account activation status',
+              example: false,
+            },
+            lastLoginAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last login timestamp',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Account creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
             },
           },
         },
@@ -255,6 +330,23 @@ Tokens are valid for 7 days after login.
                   type: 'string',
                   description: 'Ghana Post GPS digital address (optional)',
                   example: 'GA-184-1234',
+                },
+                isPhoneVerified: {
+                  type: 'boolean',
+                  description: 'Phone verification status',
+                  example: true,
+                },
+                phoneVerifiedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Phone verification timestamp',
+                  example: '2024-01-01T00:02:30.000Z',
+                },
+                lastLoginAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Last login timestamp',
+                  example: '2024-01-01T00:05:00.000Z',
                 },
               },
             },
@@ -504,14 +596,17 @@ Tokens are valid for 7 days after login.
               description: 'Google Maps URL for station location',
               example: 'https://maps.google.com/?q=5.6037,-0.1870',
             },
-            coordinates: {
-              type: 'object',
-              description: 'Station coordinates (flexible object format - accepts any coordinate structure)',
-              example: {
-                latitude: 5.6037,
-                longitude: -0.1870
-              },
-              additionalProperties: true
+            lat: {
+              type: 'number',
+              format: 'float',
+              description: 'Station latitude (stored in database)',
+              example: 5.6037,
+            },
+            lng: {
+              type: 'number',
+              format: 'float',
+              description: 'Station longitude (stored in database)',
+              example: -0.1870,
             },
             region: {
               type: 'string',
@@ -572,14 +667,17 @@ Tokens are valid for 7 days after login.
               description: 'Google Maps URL for station location',
               example: 'https://maps.google.com/?q=5.6037,-0.1870',
             },
-            coordinates: {
-              type: 'object',
-              description: 'Station coordinates (flexible object format - accepts any coordinate structure)',
-              example: {
-                latitude: 5.6037,
-                longitude: -0.1870
-              },
-              additionalProperties: true
+            latitude: {
+              type: 'number',
+              format: 'float',
+              description: 'Station latitude (frontend sends as latitude)',
+              example: 5.6037,
+            },
+            longitude: {
+              type: 'number',
+              format: 'float',
+              description: 'Station longitude (frontend sends as longitude)',
+              example: -0.1870,
             },
             region: {
               type: 'string',
@@ -1232,6 +1330,398 @@ Tokens are valid for 7 days after login.
             },
             admin: {
               $ref: '#/components/schemas/SuperAdmin',
+            },
+          },
+        },
+        // OTP Management Schemas
+        OTPGenerateRequest: {
+          type: 'object',
+          required: ['phone_number', 'purpose'],
+          properties: {
+            phone_number: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+            purpose: {
+              type: 'string',
+              enum: ['registration', 'password_reset', 'phone_verification'],
+              description: 'Purpose of the OTP',
+              example: 'phone_verification',
+            },
+            expiry: {
+              type: 'number',
+              description: 'OTP expiry time in minutes (default: 5)',
+              example: 5,
+            },
+            length: {
+              type: 'number',
+              description: 'OTP code length (default: 6)',
+              example: 6,
+            },
+            message: {
+              type: 'string',
+              description: 'Custom SMS message (use %otp_code% placeholder)',
+              example: 'Your OTP code is %otp_code%. Valid for 5 minutes.',
+            },
+            sender_id: {
+              type: 'string',
+              description: 'SMS sender ID (default: Arkesel)',
+              example: 'Arkesel',
+            },
+          },
+        },
+        OTPVerifyRequest: {
+          type: 'object',
+          required: ['phone_number', 'otp_code'],
+          properties: {
+            phone_number: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+            otp_code: {
+              type: 'string',
+              description: 'OTP code received via SMS',
+              example: '123456',
+            },
+          },
+        },
+        OTPResendRequest: {
+          type: 'object',
+          required: ['phone_number', 'purpose'],
+          properties: {
+            phone_number: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+            purpose: {
+              type: 'string',
+              enum: ['registration', 'password_reset', 'phone_verification'],
+              description: 'Purpose of the OTP',
+              example: 'phone_verification',
+            },
+          },
+        },
+        OTPResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'OTP sent successfully',
+            },
+            data: {
+              type: 'object',
+              properties: {
+                phone_number: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                purpose: {
+                  type: 'string',
+                  example: 'phone_verification',
+                },
+                expires_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:05:00.000Z',
+                },
+                arkesel_response: {
+                  type: 'object',
+                  description: 'Response from Arkesel SMS API',
+                },
+              },
+            },
+          },
+        },
+        OTPVerifyResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'OTP verified successfully',
+            },
+            data: {
+              type: 'object',
+              properties: {
+                phone_number: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                verified_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:02:30.000Z',
+                },
+                arkesel_response: {
+                  type: 'object',
+                  description: 'Response from Arkesel SMS API',
+                },
+              },
+            },
+          },
+        },
+        OTPStatusResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            data: {
+              type: 'object',
+              properties: {
+                phone_number: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                purpose: {
+                  type: 'string',
+                  example: 'phone_verification',
+                },
+                is_verified: {
+                  type: 'boolean',
+                  example: false,
+                },
+                is_expired: {
+                  type: 'boolean',
+                  example: false,
+                },
+                is_valid: {
+                  type: 'boolean',
+                  example: true,
+                },
+                attempts: {
+                  type: 'number',
+                  example: 0,
+                },
+                created_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:00:00.000Z',
+                },
+                expires_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:05:00.000Z',
+                },
+              },
+            },
+          },
+        },
+        ArkeselServiceStatus: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            data: {
+              type: 'object',
+              properties: {
+                service: {
+                  type: 'string',
+                  example: 'Arkesel OTP',
+                },
+                status: {
+                  type: 'string',
+                  example: 'available',
+                },
+                checked_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:00:00.000Z',
+                },
+                details: {
+                  type: 'object',
+                  description: 'Additional service details',
+                },
+              },
+            },
+          },
+        },
+        // Updated Authentication Schemas with OTP
+        RegisterResponseWithOTP: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'User created successfully. Please verify your phone number with the OTP sent.',
+            },
+            user: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011',
+                },
+                name: {
+                  type: 'string',
+                  example: 'John Doe',
+                },
+                phone: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                email: {
+                  type: 'string',
+                  example: 'john@example.com',
+                },
+                isPhoneVerified: {
+                  type: 'boolean',
+                  example: false,
+                },
+                isActive: {
+                  type: 'boolean',
+                  example: false,
+                },
+              },
+            },
+            otp_sent: {
+              type: 'object',
+              properties: {
+                phone_number: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                expires_at: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:05:00.000Z',
+                },
+              },
+            },
+          },
+        },
+        PhoneVerificationRequest: {
+          type: 'object',
+          required: ['phone', 'otp_code'],
+          properties: {
+            phone: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+            otp_code: {
+              type: 'string',
+              description: 'OTP code received via SMS',
+              example: '123456',
+            },
+          },
+        },
+        PhoneVerificationResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'Phone number verified successfully. You can now login.',
+            },
+            user: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011',
+                },
+                name: {
+                  type: 'string',
+                  example: 'John Doe',
+                },
+                phone: {
+                  type: 'string',
+                  example: '+233201234567',
+                },
+                email: {
+                  type: 'string',
+                  example: 'john@example.com',
+                },
+                isPhoneVerified: {
+                  type: 'boolean',
+                  example: true,
+                },
+                phoneVerifiedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2024-01-01T00:02:30.000Z',
+                },
+                isActive: {
+                  type: 'boolean',
+                  example: true,
+                },
+              },
+            },
+          },
+        },
+        ForgotPasswordRequest: {
+          type: 'object',
+          required: ['phone'],
+          properties: {
+            phone: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+          },
+        },
+        ForgotPasswordResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'Password reset OTP sent successfully',
+            },
+            phone_number: {
+              type: 'string',
+              example: '+233201234567',
+            },
+            expires_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2024-01-01T00:05:00.000Z',
+            },
+          },
+        },
+        ResetPasswordRequest: {
+          type: 'object',
+          required: ['phone', 'otp_code', 'new_password'],
+          properties: {
+            phone: {
+              type: 'string',
+              description: 'Phone number in international format',
+              example: '+233201234567',
+            },
+            otp_code: {
+              type: 'string',
+              description: 'OTP code received via SMS',
+              example: '123456',
+            },
+            new_password: {
+              type: 'string',
+              minLength: 6,
+              description: 'New password (minimum 6 characters)',
+              example: 'newSecurePassword123',
+            },
+          },
+        },
+        ResetPasswordResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'Password reset successfully',
+            },
+            phone_number: {
+              type: 'string',
+              example: '+233201234567',
             },
           },
         },
