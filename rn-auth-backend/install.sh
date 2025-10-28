@@ -404,21 +404,12 @@ $DOMAIN {
 }
 EOF
 
-# === 7. Install PM2 for Node.js Process Management ===
-echo "📦 Installing PM2 for Node.js process management..."
-if ! command -v pm2 &> /dev/null; then
-    sudo npm install -g pm2
-    echo "✅ PM2 installed successfully"
-else
-    echo "✅ PM2 is already installed"
-fi
-
-# === 8. Restart and Enable Caddy ===
+# === 7. Restart and Enable Caddy ===
 echo "🔄 Restarting Caddy..."
 sudo systemctl reload caddy || sudo systemctl restart caddy
 sudo systemctl enable caddy
 
-# === 9. Verify Caddy Status ===
+# === 8. Verify Caddy Status ===
 echo ""
 echo "🔍 Checking Caddy status..."
 sudo systemctl status caddy --no-pager
@@ -452,6 +443,12 @@ echo "   • Restart: sudo systemctl restart caddy"
 echo "   • Reload config: sudo systemctl reload caddy"
 echo "   • View logs: sudo journalctl -u caddy -f"
 echo "   • Test config: sudo caddy validate --config /etc/caddy/Caddyfile"
+echo ""
+echo "🚀 Next Steps:"
+echo "   1. Deploy your Node.js backend via GitHub Actions"
+echo "   2. The backend will run as a systemd service"
+echo "   3. Caddy will automatically proxy API requests"
+echo "   4. Visit https://$DOMAIN to see the status page"
 echo ""
 echo "🌍 Visit your status page: https://$DOMAIN"
 echo ""
