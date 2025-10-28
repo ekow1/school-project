@@ -186,9 +186,10 @@ jobs:
       run: |
         # Create .env file in rn-auth-backend directory
         cat > rn-auth-backend/.env << EOF
-        MONGO_URI=${{ secrets.MONGODB_URI }}
+        MONGODB_URI=${{ secrets.MONGODB_URI }}
         PORT=5000
         JWT_SECRET=${{ secrets.JWT_SECRET }}
+        ARKSEND=${{ secrets.ARKSEND }}
         NODE_ENV=production
         EOF
 
@@ -254,6 +255,11 @@ jobs:
           echo "📦 Installing production dependencies..."
           npm install --production
 
+          echo "🔍 Verifying environment variables..."
+          echo "MONGODB_URI: ${MONGODB_URI:0:20}..."
+          echo "JWT_SECRET: ${JWT_SECRET:0:10}..."
+          echo "ARKSEND: ${ARKSEND:0:10}..."
+
           echo "🔄 Creating systemd service..."
           
           # Get current user and home directory
@@ -271,6 +277,9 @@ jobs:
           Restart=always
           User=${CURRENT_USER}
           Environment=NODE_ENV=production
+          Environment=MONGODB_URI=${{ secrets.MONGODB_URI }}
+          Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}
+          Environment=ARKSEND=${{ secrets.ARKSEND }}
           WorkingDirectory=${HOME_DIR}/school-project/backend/rn-auth-backend
           StandardOutput=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/out.log
           StandardError=append:${HOME_DIR}/school-project/backend/rn-auth-backend/logs/err.log
@@ -278,6 +287,9 @@ jobs:
           [Install]
           WantedBy=multi-user.target
           EOF
+
+          echo "📋 Generated systemd service file:"
+          cat /etc/systemd/system/auth-backend.service
 
           echo "🔄 Reloading systemd and restarting service..."
           sudo systemctl daemon-reload
