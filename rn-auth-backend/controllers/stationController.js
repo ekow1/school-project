@@ -70,11 +70,25 @@ const findExistingStation = async (data) => {
 // Create Station (with upsert functionality)
 export const createStation = async (req, res) => {
     try {
+        // Log the incoming request body
+        console.log('🚀 CREATE STATION - Request Body:', JSON.stringify(req.body, null, 2));
+        
         const { name, location, location_url, phone_number, latitude, longitude } = req.body;
+        
+        // Log extracted values
+        console.log('📋 Extracted values:', {
+            name,
+            location,
+            location_url,
+            phone_number,
+            latitude,
+            longitude
+        });
         
         // Validate coordinates
         const coordinateErrors = validateCoordinates(latitude, longitude);
         if (coordinateErrors.length > 0) {
+            console.log('❌ Coordinate validation errors:', coordinateErrors);
             return res.status(400).json({
                 success: false,
                 message: coordinateErrors.join(', ')
@@ -85,6 +99,8 @@ export const createStation = async (req, res) => {
         const existingStation = await findExistingStation({ location, phone_number, latitude, longitude });
         
         if (existingStation) {
+            console.log('🔄 Found existing station:', existingStation._id);
+            
             // Update existing station with missing data
             const updateData = {};
             
@@ -97,12 +113,16 @@ export const createStation = async (req, res) => {
             const coordinateData = mapCoordinates(latitude, longitude);
             Object.assign(updateData, coordinateData);
             
+            console.log('📝 Update data:', updateData);
+            
             if (Object.keys(updateData).length > 0) {
                 const updatedStation = await Station.findByIdAndUpdate(
                     existingStation._id,
                     updateData,
                     { new: true, runValidators: true }
                 );
+                
+                console.log('✅ Station updated successfully:', updatedStation);
                 
                 return res.status(200).json({
                     success: true,
@@ -111,6 +131,8 @@ export const createStation = async (req, res) => {
                     action: 'updated'
                 });
             } else {
+                console.log('⏭️ Station already exists with all data, skipping update');
+                
                 return res.status(200).json({
                     success: true,
                     message: 'Station already exists with all data',
@@ -129,7 +151,11 @@ export const createStation = async (req, res) => {
             ...mapCoordinates(latitude, longitude)
         };
         
+        console.log('🆕 Creating new station with data:', stationData);
+        
         const station = await Station.create(stationData);
+        
+        console.log('✅ Station created successfully:', station);
         
         res.status(201).json({
             success: true,
@@ -139,7 +165,7 @@ export const createStation = async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Create station error:', error);
+        console.error('❌ Create station error:', error);
         
         if (error.code === 11000) {
             return res.status(400).json({
