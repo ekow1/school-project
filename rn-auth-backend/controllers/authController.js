@@ -1,6 +1,8 @@
 import User from '../models/User.js';
+import OTP from '../models/OTP.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import arkeselOTPService from '../services/arkeselOTPService.js';
 
 export const register = async (req, res) => {
     try {
@@ -30,7 +32,10 @@ export const register = async (req, res) => {
         const existing = await User.findOne({ phone });
         if (existing) return res.status(400).json({ message: 'Phone already in use' });
 
+        // Hash password
         const hashed = await bcrypt.hash(password, 10);
+
+        // Create user but mark as unverified
         const user = new User({ 
             name, 
             phone, 
@@ -40,27 +45,57 @@ export const register = async (req, res) => {
             country,
             dob,
             image,
-            ghanaPost
+            ghanaPost,
+            isPhoneVerified: false, // User needs to verify phone
+            isActive: false // User account is inactive until phone verification
         });
         await user.save();
 
-        // Generate JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        // Send OTP for phone verification
+        const otpResult = await arkeselOTPService.generateOTP({
+            phone_number: phone,
+            purpose: 'registration',
+            message: 'Your registration OTP code is %otp_code%. Valid for 5 minutes.'
+        });
 
-        // Return user data without password
+        if (!otpResult.success) {
+            // If OTP fails, delete the user
+            await User.findByIdAndDelete(user._id);
+            return res.status(500).json({
+                message: 'Failed to send OTP. Please try again.',
+                error: otpResult.error
+            });
+        }
+
+        // Calculate expiry time
+        const expiryTime = new Date();
+        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+
+        // Save OTP to database
+        const otp = new OTP({
+            phone_number: otpResult.phone_number,
+            otp_code: otpResult.data.code || 'GENERATED',
+            expiry_time: expiryTime,
+            purpose: 'registration',
+            arkesel_response: otpResult.data
+        });
+
+        await otp.save();
+
+        // Return success without token (user needs to verify OTP first)
         res.status(201).json({ 
-            message: 'User created successfully',
-            token,
+            message: 'User created successfully. Please verify your phone number with the OTP sent.',
             user: {
                 id: user._id,
                 name: user.name,
                 phone: user.phone,
                 email: user.email,
-                address: user.address,
-                country: user.country,
-                dob: user.dob,
-                image: user.image,
-                ghanaPost: user.ghanaPost
+                isPhoneVerified: user.isPhoneVerified,
+                isActive: user.isActive
+            },
+            otp_sent: {
+                phone_number: otpResult.phone_number,
+                expires_at: expiryTime
             }
         });
     } catch (err) {
@@ -84,8 +119,19 @@ export const login = async (req, res) => {
         const user = await User.findOne({ phone });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
+        // Check if user account is active
+        if (!user.isActive) {
+            return res.status(403).json({ 
+                message: 'Account is not active. Please verify your phone number first.' 
+            });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+        // Update last login time
+        user.lastLoginAt = new Date();
+        await user.save();
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ 
@@ -99,9 +145,261 @@ export const login = async (req, res) => {
                 country: user.country,
                 dob: user.dob,
                 image: user.image,
-                ghanaPost: user.ghanaPost
+                ghanaPost: user.ghanaPost,
+                isPhoneVerified: user.isPhoneVerified,
+                phoneVerifiedAt: user.phoneVerifiedAt,
+                lastLoginAt: user.lastLoginAt
             }
         });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Send OTP for registration
+export const sendRegistrationOTP = async (req, res) => {
+    try {
+        const { phone } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required' });
+        }
+
+        // Check if phone already exists
+        const existing = await User.findOne({ phone });
+        if (existing) {
+            return res.status(400).json({ message: 'Phone number already registered' });
+        }
+
+        // Generate OTP using Arkesel service
+        const otpResult = await arkeselOTPService.generateOTP({
+            phone_number: phone,
+            purpose: 'registration',
+            message: 'Your registration OTP code is %otp_code%. Valid for 5 minutes.'
+        });
+
+        if (!otpResult.success) {
+            return res.status(500).json({
+                message: 'Failed to send OTP',
+                error: otpResult.error
+            });
+        }
+
+        // Calculate expiry time
+        const expiryTime = new Date();
+        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+
+        // Save OTP to database
+        const otp = new OTP({
+            phone_number: otpResult.phone_number,
+            otp_code: otpResult.data.code || 'GENERATED',
+            expiry_time: expiryTime,
+            purpose: 'registration',
+            arkesel_response: otpResult.data
+        });
+
+        await otp.save();
+
+        res.status(200).json({
+            message: 'OTP sent successfully',
+            phone_number: otpResult.phone_number,
+            expires_at: expiryTime
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Forgot Password - Send OTP
+export const forgotPassword = async (req, res) => {
+    try {
+        const { phone } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required' });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ phone });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Generate OTP using Arkesel service
+        const otpResult = await arkeselOTPService.generateOTP({
+            phone_number: phone,
+            purpose: 'password_reset',
+            message: 'Your password reset OTP code is %otp_code%. Valid for 5 minutes.'
+        });
+
+        if (!otpResult.success) {
+            return res.status(500).json({
+                message: 'Failed to send OTP',
+                error: otpResult.error
+            });
+        }
+
+        // Calculate expiry time
+        const expiryTime = new Date();
+        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+
+        // Save OTP to database
+        const otp = new OTP({
+            phone_number: otpResult.phone_number,
+            otp_code: otpResult.data.code || 'GENERATED',
+            expiry_time: expiryTime,
+            purpose: 'password_reset',
+            arkesel_response: otpResult.data
+        });
+
+        await otp.save();
+
+        res.status(200).json({
+            message: 'Password reset OTP sent successfully',
+            phone_number: otpResult.phone_number,
+            expires_at: expiryTime
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Reset Password with OTP verification
+export const resetPassword = async (req, res) => {
+    try {
+        const { phone, otp_code, new_password } = req.body;
+
+        if (!phone || !otp_code || !new_password) {
+            return res.status(400).json({ 
+                message: 'Phone number, OTP code, and new password are required' 
+            });
+        }
+
+        if (new_password.length < 6) {
+            return res.status(400).json({ 
+                message: 'New password must be at least 6 characters long' 
+            });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ phone });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Verify OTP
+        const otp = await OTP.findOne({
+            phone_number: phone,
+            otp_code,
+            purpose: 'password_reset',
+            is_verified: false
+        }).sort({ createdAt: -1 });
+
+        if (!otp) {
+            return res.status(400).json({ message: 'Invalid OTP code' });
+        }
+
+        if (otp.is_expired) {
+            return res.status(400).json({ message: 'OTP has expired' });
+        }
+
+        if (otp.attempts >= 5) {
+            return res.status(400).json({ 
+                message: 'Too many verification attempts. Please request a new OTP.' 
+            });
+        }
+
+        // Mark OTP as verified
+        otp.is_verified = true;
+        await otp.save();
+
+        // Update user password
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.status(200).json({
+            message: 'Password reset successfully',
+            phone_number: phone
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Verify Phone Number (for existing users)
+export const verifyPhone = async (req, res) => {
+    try {
+        const { phone, otp_code } = req.body;
+
+        if (!phone || !otp_code) {
+            return res.status(400).json({ 
+                message: 'Phone number and OTP code are required' 
+            });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ phone });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.isPhoneVerified) {
+            return res.status(400).json({ 
+                message: 'Phone number is already verified' 
+            });
+        }
+
+        // Verify OTP
+        const otp = await OTP.findOne({
+            phone_number: phone,
+            otp_code,
+            purpose: 'phone_verification',
+            is_verified: false
+        }).sort({ createdAt: -1 });
+
+        if (!otp) {
+            return res.status(400).json({ message: 'Invalid OTP code' });
+        }
+
+        if (otp.is_expired) {
+            return res.status(400).json({ message: 'OTP has expired' });
+        }
+
+        if (otp.attempts >= 5) {
+            return res.status(400).json({ 
+                message: 'Too many verification attempts. Please request a new OTP.' 
+            });
+        }
+
+        // Mark OTP as verified
+        otp.is_verified = true;
+        await otp.save();
+
+        // Update user verification status
+        user.isPhoneVerified = true;
+        user.phoneVerifiedAt = new Date();
+        user.isActive = true; // Activate the account
+        await user.save();
+
+        res.status(200).json({
+            message: 'Phone number verified successfully. You can now login.',
+            user: {
+                id: user._id,
+                name: user.name,
+                phone: user.phone,
+                email: user.email,
+                isPhoneVerified: user.isPhoneVerified,
+                phoneVerifiedAt: user.phoneVerifiedAt,
+                isActive: user.isActive
+            }
+        });
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

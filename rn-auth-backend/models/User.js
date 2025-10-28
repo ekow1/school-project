@@ -9,7 +9,34 @@ const userSchema = new mongoose.Schema({
     country: { type: String, default: 'Ghana' },
     dob: { type: Date },
     image: { type: String },
-    ghanaPost: { type: String }
-}, { timestamps: true });
+    ghanaPost: { type: String },
+    // OTP Verification Fields
+    isPhoneVerified: { 
+        type: Boolean, 
+        default: false 
+    },
+    phoneVerifiedAt: { 
+        type: Date 
+    },
+    // Password Reset Fields
+    resetPasswordToken: { 
+        type: String 
+    },
+    resetPasswordExpires: { 
+        type: Date 
+    },
+    // Account Status
+    isActive: { 
+        type: Boolean, 
+        default: true 
+    },
+    lastLoginAt: { 
+        type: Date 
+    }
+}, { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model('User', userSchema);

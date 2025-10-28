@@ -10,9 +10,7 @@ import departmentRoutes from './routes/departmentRoutes.js';
 import subdivisionRoutes from './routes/subdivisionRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import rankRoutes from './routes/rankRoutes.js';
-import superAdminRoutes from './routes/superAdminRoutes.js';
-import verifyToken from './middleware/verifyToken.js';
-import { swaggerUi, specs } from './swagger.js';
+import otpRoutes from './routes/otpRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -33,6 +31,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Authentication Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', verifyToken, profileRoutes);
+
+// OTP Routes (public - no auth required)
+app.use('/api/otp', otpRoutes);
 
 // Fire Service Routes (all protected)
 app.use('/api/fire/stations', verifyToken, stationRoutes);
