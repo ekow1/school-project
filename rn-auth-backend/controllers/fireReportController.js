@@ -258,34 +258,18 @@ export const createFireReport = async (req, res) => {
 // Get All Fire Reports
 export const getAllFireReports = async (req, res) => {
     try {
-        const { status, priority, station, page = 1, limit = 10 } = req.query;
-        
-        // Build filter
-        const filter = {};
-        if (status) filter.status = status;
-        if (priority) filter.priority = priority;
-        if (station) filter.station = station;
-
-        const skip = (page - 1) * limit;
-
-        const fireReports = await FireReport.find(filter)
+        const fireReports = await FireReport.find({})
             .populate('station', 'name location lat lng phone_number')
             .populate('userId', 'name phone')
             .populate('assignedPersonnel', 'name rank role')
-            .sort({ reportedAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
+            .sort({ reportedAt: -1 });
 
-        const total = await FireReport.countDocuments(filter);
+        const total = fireReports.length;
 
         res.json({
             success: true,
             data: fireReports,
-            pagination: {
-                current: parseInt(page),
-                pages: Math.ceil(total / limit),
-                total
-            }
+            total
         });
 
     } catch (error) {

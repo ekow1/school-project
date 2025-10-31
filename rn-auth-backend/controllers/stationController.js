@@ -321,12 +321,7 @@ export const bulkCreateStations = async (req, res) => {
 // Get All Stations
 export const getAllStations = async (req, res) => {
     try {
-        const { region } = req.query;
-        const filter = {};
-        
-        if (region) filter.region = region;
-        
-        const stations = await Station.find(filter)
+        const stations = await Station.find({})
             .populate('departments')
             .populate('personnel')
             .sort({ name: 1 });

@@ -380,7 +380,7 @@ router.post('/', verifyToken, createFireReport);
  *       500:
  *         description: Server error
  */
-router.get('/', verifyToken, getAllFireReports);
+router.get('/',  getAllFireReports);
 
 /**
  * @swagger

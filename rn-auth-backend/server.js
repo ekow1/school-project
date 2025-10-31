@@ -45,7 +45,7 @@ app.use('/api/fire/departments', verifyToken, departmentRoutes);
 app.use('/api/fire/subdivisions', verifyToken, subdivisionRoutes);
 app.use('/api/fire/roles', verifyToken, roleRoutes);
 app.use('/api/fire/ranks', verifyToken, rankRoutes);
-app.use('/api/fire/reports',  fireReportRoutes);
+app.use('/api/fire/reports', verifyToken, fireReportRoutes);
 
 // Super Admin routes (mixed - some public, some protected)
 // The routes file handles which ones need auth
