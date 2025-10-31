@@ -67,7 +67,7 @@ stationSchema.virtual('departments', {
 
 // Virtual for personnel in this station
 stationSchema.virtual('personnel', {
-    ref: 'Personnel',
+    ref: 'FirePersonnel',
     localField: '_id',
     foreignField: 'station_id'
 });
