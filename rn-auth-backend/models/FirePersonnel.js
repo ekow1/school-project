@@ -40,6 +40,24 @@ const firePersonnelSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    tempPassword: {
+        type: String,
+        required: false,
+        select: false // Don't include password in queries by default
+    },
+    password: {
+        type: String,
+        required: false,
+        select: false // Don't include password in queries by default
+    },
+    tempPasswordExpiry: {
+        type: Date,
+        required: false
+    },
+    passwordResetRequired: {
+        type: Boolean,
+        default: true // Require password reset on first login if temp password was set
+    },
 }, { 
     timestamps: true 
 });

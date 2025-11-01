@@ -1,42 +1,42 @@
 import express from 'express';
 import {
-    createSubdivision,
-    getAllSubdivisions,
-    getSubdivisionById,
-    updateSubdivision,
-    deleteSubdivision,
-    getSubdivisionsByDepartment
-} from '../controllers/subdivisionController.js';
+    createUnit,
+    getAllUnits,
+    getUnitById,
+    updateUnit,
+    deleteUnit,
+    getUnitsByDepartment
+} from '../controllers/unitController.js';
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   - name: Subdivisions
+ *   - name: Units
  *     description: Unit management within departments. Supports CRUD operations and department-based filtering.
  */
 
 /**
  * @swagger
- * /api/fire/subdivisions:
+ * /api/fire/units:
  *   post:
  *     summary: Create a new unit
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Create a new unit within a department
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SubdivisionCreateRequest'
+ *             $ref: '#/components/schemas/UnitCreateRequest'
  *     responses:
  *       201:
  *         description: Unit created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SubdivisionResponse'
+ *               $ref: '#/components/schemas/UnitResponse'
  *       400:
  *         description: Validation error
  *       404:
@@ -44,14 +44,14 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/', createSubdivision);
+router.post('/', createUnit);
 
 /**
  * @swagger
- * /api/fire/subdivisions:
+ * /api/fire/units:
  *   get:
  *     summary: Get all units
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Retrieve all units with optional department filtering
  *     parameters:
  *       - in: query
@@ -74,18 +74,18 @@ router.post('/', createSubdivision);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Subdivision'
+ *                     $ref: '#/components/schemas/Unit'
  *       500:
  *         description: Server error
  */
-router.get('/', getAllSubdivisions);
+router.get('/', getAllUnits);
 
 /**
  * @swagger
- * /api/fire/subdivisions/{id}:
+ * /api/fire/units/{id}:
  *   get:
  *     summary: Get unit by ID
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Retrieve a specific unit by its ID
  *     parameters:
  *       - in: path
@@ -105,7 +105,7 @@ router.get('/', getAllSubdivisions);
  *                 success:
  *                   type: boolean
  *                 data:
- *                   $ref: '#/components/schemas/Subdivision'
+ *                   $ref: '#/components/schemas/Unit'
  *       400:
  *         description: Invalid unit ID format
  *       404:
@@ -113,14 +113,14 @@ router.get('/', getAllSubdivisions);
  *       500:
  *         description: Server error
  */
-router.get('/:id', getSubdivisionById);
+router.get('/:id', getUnitById);
 
 /**
  * @swagger
- * /api/fire/subdivisions/{id}:
+ * /api/fire/units/{id}:
  *   patch:
  *     summary: Update unit
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Update an existing unit
  *     parameters:
  *       - in: path
@@ -150,7 +150,7 @@ router.get('/:id', getSubdivisionById);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SubdivisionResponse'
+ *               $ref: '#/components/schemas/UnitResponse'
  *       400:
  *         description: Invalid input data
  *       404:
@@ -158,14 +158,14 @@ router.get('/:id', getSubdivisionById);
  *       500:
  *         description: Server error
  */
-router.patch('/:id', updateSubdivision);
+router.patch('/:id', updateUnit);
 
 /**
  * @swagger
- * /api/fire/subdivisions/{id}:
+ * /api/fire/units/{id}:
  *   delete:
  *     summary: Delete unit
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Delete a unit by its ID
  *     parameters:
  *       - in: path
@@ -193,14 +193,14 @@ router.patch('/:id', updateSubdivision);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', deleteSubdivision);
+router.delete('/:id', deleteUnit);
 
 /**
  * @swagger
- * /api/fire/subdivisions/department/{departmentId}:
+ * /api/fire/units/department/{departmentId}:
  *   get:
  *     summary: Get units by department
- *     tags: [Subdivisions]
+ *     tags: [Units]
  *     description: Retrieve all units for a specific department
  *     parameters:
  *       - in: path
@@ -224,14 +224,13 @@ router.delete('/:id', deleteSubdivision);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Subdivision'
+ *                     $ref: '#/components/schemas/Unit'
  *       400:
  *         description: Invalid department ID format
  *       500:
  *         description: Server error
  */
-router.get('/department/:departmentId', getSubdivisionsByDepartment);
+router.get('/department/:departmentId', getUnitsByDepartment);
 
 export default router;
-
 

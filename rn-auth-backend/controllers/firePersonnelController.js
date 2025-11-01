@@ -1,13 +1,14 @@
 import FirePersonnel from '../models/FirePersonnel.js';
-import Subdivision from '../models/Unit.js';
+import Unit from '../models/Unit.js';
 import Department from '../models/Department.js';
 import Station from '../models/Station.js';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // Create FirePersonnel
 export const createFirePersonnel = async (req, res) => {
     try {
-        const { serviceNumber, name, rank, department, subdivision, role, station_id, station } = req.body;
+        const { serviceNumber, name, rank, department, unit, role, station_id, station, tempPassword } = req.body;
         
         if (!serviceNumber) {
             return res.status(400).json({
@@ -15,6 +16,20 @@ export const createFirePersonnel = async (req, res) => {
                 message: 'Service number is required'
             });
         }
+        
+        // Generate temporary password if not provided
+        let generatedTempPassword = tempPassword;
+        if (!generatedTempPassword) {
+            // Generate a random 8-character password
+            generatedTempPassword = Math.random().toString(36).slice(-8).toUpperCase();
+        }
+        
+        // Hash the temporary password
+        const hashedTempPassword = await bcrypt.hash(generatedTempPassword, 10);
+        
+        // Set expiry for 7 days from now
+        const tempPasswordExpiry = new Date();
+        tempPasswordExpiry.setDate(tempPasswordExpiry.getDate() + 7);
 
         // Validate station_id if provided
         if (station_id) {
@@ -36,16 +51,16 @@ export const createFirePersonnel = async (req, res) => {
         }
 
         // Validate unit-department relationship if both provided
-        if (subdivision && department) {
-            const subdivisionDoc = await Subdivision.findById(subdivision).populate('department');
-            if (!subdivisionDoc) {
+        if (unit && department) {
+            const unitDoc = await Unit.findById(unit).populate('department');
+            if (!unitDoc) {
                 return res.status(404).json({
                     success: false,
                     message: 'Unit not found'
                 });
             }
 
-            if (subdivisionDoc.department._id.toString() !== department) {
+            if (unitDoc.department._id.toString() !== department) {
                 return res.status(400).json({
                     success: false,
                     message: 'Unit does not belong to the specified department'
@@ -54,7 +69,17 @@ export const createFirePersonnel = async (req, res) => {
         }
 
         const personnel = new FirePersonnel({
-            serviceNumber, name, rank, department, unit: subdivision, role, station_id, station
+            serviceNumber, 
+            name, 
+            rank, 
+            department, 
+            unit, 
+            role, 
+            station_id, 
+            station,
+            tempPassword: hashedTempPassword,
+            tempPasswordExpiry: tempPasswordExpiry,
+            passwordResetRequired: true
         });
         await personnel.save();
 
@@ -67,8 +92,10 @@ export const createFirePersonnel = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: 'Fire personnel created successfully',
-            data: populatedPersonnel
+            message: 'Fire personnel created successfully. Temporary password set for 7 days.',
+            data: populatedPersonnel,
+            tempPassword: generatedTempPassword, // Return the plain text temp password so admin can share it
+            tempPasswordExpiry: tempPasswordExpiry
         });
     } catch (error) {
         res.status(500).json({
@@ -81,11 +108,11 @@ export const createFirePersonnel = async (req, res) => {
 // Get All FirePersonnel
 export const getAllFirePersonnel = async (req, res) => {
     try {
-        const { subdivision, station_id, station, rank, department } = req.query;
+        const { unit, station_id, station, rank, department } = req.query;
         const filter = {};
 
         if (department) filter.department = department;
-        if (subdivision) filter.unit = subdivision;
+        if (unit) filter.unit = unit;
         if (station_id) {
             if (!mongoose.Types.ObjectId.isValid(station_id)) {
                 return res.status(400).json({
@@ -167,7 +194,7 @@ export const updateFirePersonnel = async (req, res) => {
             });
         }
 
-        const { department, subdivision, station_id } = req.body;
+        const { department, unit, station_id } = req.body;
 
         // Validate station_id if provided
         if (station_id) {
@@ -188,31 +215,27 @@ export const updateFirePersonnel = async (req, res) => {
             }
         }
 
-        // If updating subdivision, validate that it belongs to the department
-        if (subdivision) {
-            const subdivisionDoc = await Subdivision.findById(subdivision).populate('department');
-            if (!subdivisionDoc) {
+        // If updating unit, validate that it belongs to the department
+        if (unit) {
+            const unitDoc = await Unit.findById(unit).populate('department');
+            if (!unitDoc) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Subdivision not found'
+                    message: 'Unit not found'
                 });
             }
 
-            // If both department and subdivision provided, validate they match
-            if (department && subdivisionDoc.department._id.toString() !== department) {
+            // If both department and unit provided, validate they match
+            if (department && unitDoc.department._id.toString() !== department) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Subdivision does not belong to the specified department'
+                    message: 'Unit does not belong to the specified department'
                 });
             }
 
         }
 
         const updateData = { ...req.body };
-        if (subdivision) {
-            updateData.unit = subdivision;
-            delete updateData.subdivision;
-        }
 
         const personnel = await FirePersonnel.findByIdAndUpdate(
             req.params.id,
@@ -277,18 +300,18 @@ export const deleteFirePersonnel = async (req, res) => {
     }
 };
 
-// Get Personnel by Subdivision
-export const getPersonnelBySubdivision = async (req, res) => {
+// Get Personnel by Unit
+export const getPersonnelByUnit = async (req, res) => {
     try {
         // Validate ObjectId
-        if (!mongoose.Types.ObjectId.isValid(req.params.subdivisionId)) {
+        if (!mongoose.Types.ObjectId.isValid(req.params.unitId)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid subdivision ID format'
+                message: 'Invalid unit ID format'
             });
         }
 
-        const personnel = await FirePersonnel.find({ unit: req.params.subdivisionId })
+        const personnel = await FirePersonnel.find({ unit: req.params.unitId })
             .populate('rank')
             .populate('department')
             .populate('unit')

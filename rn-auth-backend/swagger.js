@@ -18,7 +18,7 @@ A comprehensive backend API for managing Ghana National Fire Service stations, d
 - **Station Management**: Complete CRUD operations with intelligent upsert functionality
 - **Department Management**: Station-based department organization
 - **Personnel Management**: Fire service personnel with dual reference structure
-- **Fire Service Entities**: Ranks, Roles, Subdivisions, and Super Admin management
+- **Fire Service Entities**: Ranks, Roles, Units, and Super Admin management
 - **Smart Duplicate Detection**: Prevents duplicate stations using coordinates, location, or phone number
 - **Bulk Operations**: Efficient handling of multiple stations/departments/personnel
 - **Data Validation**: Comprehensive validation with meaningful error messages
@@ -90,7 +90,7 @@ Tokens are valid for 24 hours after login.
         description: 'Fire service personnel management with dual reference structure (station + department/unit).',
       },
       {
-        name: 'Subdivisions',
+        name: 'Units',
         description: 'Unit management within departments. Supports CRUD operations and department-based filtering.',
       },
       {
@@ -835,7 +835,7 @@ Tokens are valid for 24 hours after login.
               type: 'array',
               description: 'Units in this department',
               items: {
-                $ref: '#/components/schemas/Subdivision',
+                $ref: '#/components/schemas/Unit',
               },
             },
             personnel: {
@@ -882,7 +882,7 @@ Tokens are valid for 24 hours after login.
               $ref: '#/components/schemas/Department',
             },
             unit: {
-              $ref: '#/components/schemas/Subdivision',
+              $ref: '#/components/schemas/Unit',
             },
             role: {
               $ref: '#/components/schemas/Role',
@@ -909,7 +909,7 @@ Tokens are valid for 24 hours after login.
             },
           },
         },
-        Subdivision: {
+        Unit: {
           type: 'object',
           properties: {
             _id: {
@@ -1137,9 +1137,9 @@ Tokens are valid for 24 hours after login.
               description: 'Department ID',
               example: '507f1f77bcf86cd799439012',
             },
-            subdivision: {
+            unit: {
               type: 'string',
-              description: 'Unit ID (accepted as subdivision for backward compatibility)',
+              description: 'Unit ID',
               example: '507f1f77bcf86cd799439013',
             },
             role: {
@@ -1175,7 +1175,7 @@ Tokens are valid for 24 hours after login.
             },
           },
         },
-        SubdivisionCreateRequest: {
+        UnitCreateRequest: {
           type: 'object',
           properties: {
             name: {
@@ -1203,7 +1203,7 @@ Tokens are valid for 24 hours after login.
             },
           },
         },
-        SubdivisionResponse: {
+        UnitResponse: {
           type: 'object',
           properties: {
             success: {
@@ -1215,7 +1215,7 @@ Tokens are valid for 24 hours after login.
               example: 'Unit created successfully',
             },
             data: {
-              $ref: '#/components/schemas/Subdivision',
+              $ref: '#/components/schemas/Unit',
             },
           },
         },

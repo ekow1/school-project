@@ -5,7 +5,7 @@ import {
     getFirePersonnelById,
     updateFirePersonnel,
     deleteFirePersonnel,
-    getPersonnelBySubdivision,
+    getPersonnelByUnit,
     getPersonnelByDepartment,
     getPersonnelByStation
 } from '../controllers/firePersonnelController.js';
@@ -67,10 +67,10 @@ router.post('/', createFirePersonnel);
  *           type: string
  *         description: Filter by department ID
  *       - in: query
- *         name: subdivision
+ *         name: unit
  *         schema:
  *           type: string
- *         description: Filter by unit/subdivision ID
+ *         description: Filter by unit ID
  *     responses:
  *       200:
  *         description: List of fire personnel
@@ -131,18 +131,18 @@ router.get('/station/:stationId', getPersonnelByStation);
 
 /**
  * @swagger
- * /api/fire/personnel/subdivision/{subdivisionId}:
+ * /api/fire/personnel/unit/{unitId}:
  *   get:
- *     summary: Get personnel by unit/subdivision
+ *     summary: Get personnel by unit
  *     tags: [Personnel]
- *     description: Retrieve all personnel for a specific unit/subdivision
+ *     description: Retrieve all personnel for a specific unit
  *     parameters:
  *       - in: path
- *         name: subdivisionId
+ *         name: unitId
  *         required: true
  *         schema:
  *           type: string
- *         description: Unit/Subdivision ID
+ *         description: Unit ID
  *     responses:
  *       200:
  *         description: List of personnel
@@ -164,7 +164,7 @@ router.get('/station/:stationId', getPersonnelByStation);
  *       500:
  *         description: Server error
  */
-router.get('/subdivision/:subdivisionId', getPersonnelBySubdivision);
+router.get('/unit/:unitId', getPersonnelByUnit);
 
 /**
  * @swagger
