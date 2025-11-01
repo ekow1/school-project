@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 // Create FirePersonnel
 export const createFirePersonnel = async (req, res) => {
     try {
-        const { serviceNumber, name, rank, department, unit, role, station_id, station, tempPassword } = req.body;
+        const { serviceNumber, name, rank, department, unit, role, station_id, tempPassword } = req.body;
         
         if (!serviceNumber) {
             return res.status(400).json({
@@ -76,7 +76,6 @@ export const createFirePersonnel = async (req, res) => {
             unit, 
             role, 
             station_id, 
-            station,
             tempPassword: hashedTempPassword,
             tempPasswordExpiry: tempPasswordExpiry,
             passwordResetRequired: true
@@ -108,7 +107,7 @@ export const createFirePersonnel = async (req, res) => {
 // Get All FirePersonnel
 export const getAllFirePersonnel = async (req, res) => {
     try {
-        const { unit, station_id, station, rank, department } = req.query;
+        const { unit, station_id, rank, department } = req.query;
         const filter = {};
 
         if (department) filter.department = department;
@@ -122,7 +121,6 @@ export const getAllFirePersonnel = async (req, res) => {
             }
             filter.station_id = station_id;
         }
-        if (station) filter.station = station;
         if (rank) filter.rank = rank;
 
         const personnel = await FirePersonnel.find(filter)

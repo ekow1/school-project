@@ -57,11 +57,6 @@ router.post('/', createFirePersonnel);
  *     description: Retrieve all fire service personnel with optional filtering
  *     parameters:
  *       - in: query
- *         name: station
- *         schema:
- *           type: string
- *         description: Filter by station name
- *       - in: query
  *         name: department
  *         schema:
  *           type: string

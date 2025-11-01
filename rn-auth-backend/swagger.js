@@ -892,11 +892,6 @@ Tokens are valid for 24 hours after login.
               description: 'Station ID',
               example: '507f1f77bcf86cd799439012',
             },
-            station: {
-              type: 'string',
-              description: 'Station name',
-              example: 'Accra Central Fire Station',
-            },
             createdAt: {
               type: 'string',
               format: 'date-time',
@@ -1151,11 +1146,6 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Station ID',
               example: '507f1f77bcf86cd799439015',
-            },
-            station: {
-              type: 'string',
-              description: 'Station name',
-              example: 'Accra Central Fire Station',
             },
           },
         },

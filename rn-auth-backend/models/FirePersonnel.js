@@ -36,10 +36,6 @@ const firePersonnelSchema = new mongoose.Schema({
         ref: 'Station',
         required: false
     },
-    station: {
-        type: String,
-        required: true
-    },
     tempPassword: {
         type: String,
         required: false,
@@ -66,7 +62,6 @@ const firePersonnelSchema = new mongoose.Schema({
 firePersonnelSchema.index({ serviceNumber: 1 });
 firePersonnelSchema.index({ department: 1, unit: 1 });
 firePersonnelSchema.index({ station_id: 1 });
-firePersonnelSchema.index({ station: 1 });
 firePersonnelSchema.index({ rank: 1 });
 
 export default mongoose.model('FirePersonnel', firePersonnelSchema);
