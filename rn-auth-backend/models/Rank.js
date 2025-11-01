@@ -18,11 +18,11 @@ const rankSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    role: {
+    description: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
-        description: 'Job description or role of the rank'
+        description: 'Description of the rank'
     }
 }, { 
     timestamps: true 
