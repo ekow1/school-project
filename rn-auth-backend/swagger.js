@@ -83,7 +83,7 @@ Tokens are valid for 24 hours after login.
       },
       {
         name: 'Departments',
-        description: 'Department management linked to fire stations. Supports CRUD operations and station-based filtering.',
+        description: 'Universal department management. Departments are shared across all stations. Supports CRUD operations.',
       },
       {
         name: 'Personnel',
@@ -818,31 +818,16 @@ Tokens are valid for 24 hours after login.
               description: 'Department name',
               example: 'Operations',
             },
-            station_id: {
-              type: 'string',
-              description: 'Station ID this department belongs to',
-              example: '507f1f77bcf86cd799439012',
-            },
             description: {
               type: 'string',
               description: 'Department description',
               example: 'Handles emergency response and fire fighting operations',
-            },
-            station: {
-              $ref: '#/components/schemas/Station',
             },
             units: {
               type: 'array',
               description: 'Units in this department',
               items: {
                 $ref: '#/components/schemas/Unit',
-              },
-            },
-            personnel: {
-              type: 'array',
-              description: 'Personnel in this department',
-              items: {
-                $ref: '#/components/schemas/FirePersonnel',
               },
             },
             createdAt: {
@@ -1075,16 +1060,12 @@ Tokens are valid for 24 hours after login.
         // Fire Service Request/Response Schemas
         DepartmentCreateRequest: {
           type: 'object',
+          required: ['name'],
           properties: {
             name: {
               type: 'string',
-              description: 'Department name',
+              description: 'Department name (must be unique)',
               example: 'Operations',
-            },
-            station_id: {
-              type: 'string',
-              description: 'Station ID this department belongs to',
-              example: '507f1f77bcf86cd799439012',
             },
             description: {
               type: 'string',
