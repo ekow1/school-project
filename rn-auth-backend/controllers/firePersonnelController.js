@@ -7,7 +7,14 @@ import mongoose from 'mongoose';
 // Create FirePersonnel
 export const createFirePersonnel = async (req, res) => {
     try {
-        const { name, rank, department, subdivision, role, station_id, station, region } = req.body;
+        const { serviceNumber, name, rank, department, subdivision, role, station_id, station } = req.body;
+        
+        if (!serviceNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Service number is required'
+            });
+        }
 
         // Validate station_id if provided
         if (station_id) {
@@ -47,7 +54,7 @@ export const createFirePersonnel = async (req, res) => {
         }
 
         const personnel = new FirePersonnel({
-            name, rank, department, unit: subdivision, role, station_id, station, region
+            serviceNumber, name, rank, department, unit: subdivision, role, station_id, station
         });
         await personnel.save();
 
@@ -74,7 +81,7 @@ export const createFirePersonnel = async (req, res) => {
 // Get All FirePersonnel
 export const getAllFirePersonnel = async (req, res) => {
     try {
-        const { subdivision, station_id, station, region, rank, department } = req.query;
+        const { subdivision, station_id, station, rank, department } = req.query;
         const filter = {};
 
         if (department) filter.department = department;
@@ -89,7 +96,6 @@ export const getAllFirePersonnel = async (req, res) => {
             filter.station_id = station_id;
         }
         if (station) filter.station = station;
-        if (region) filter.region = region;
         if (rank) filter.rank = rank;
 
         const personnel = await FirePersonnel.find(filter)

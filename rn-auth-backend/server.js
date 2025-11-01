@@ -49,6 +49,7 @@ app.use('/api/fire/reports', fireReportRoutes);
 
 // Super Admin routes (mixed - some public, some protected)
 // The routes file handles which ones need auth
+app.use('/api/super-admin', superAdminRoutes);
 
 /**
  * @swagger

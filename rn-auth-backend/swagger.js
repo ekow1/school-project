@@ -106,6 +106,10 @@ Tokens are valid for 24 hours after login.
         description: 'Super administrator management with authentication and department/station management capabilities.',
       },
       {
+        name: 'Fire Reports',
+        description: 'Fire incident reporting and management with support for both civilian and fire officer reporters.',
+      },
+      {
         name: 'Health',
         description: 'Service health check endpoints',
       },
@@ -861,6 +865,11 @@ Tokens are valid for 24 hours after login.
               description: 'Personnel ID',
               example: '507f1f77bcf86cd799439011',
             },
+            serviceNumber: {
+              type: 'string',
+              description: 'Unique service number',
+              example: 'GFS-2024-001',
+            },
             name: {
               type: 'string',
               description: 'Personnel name',
@@ -887,11 +896,6 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Station name',
               example: 'Accra Central Fire Station',
-            },
-            region: {
-              type: 'string',
-              description: 'Region',
-              example: 'Greater Accra',
             },
             createdAt: {
               type: 'string',
@@ -976,9 +980,9 @@ Tokens are valid for 24 hours after login.
               description: 'Numeric level for ranking',
               example: 10,
             },
-            role: {
+            description: {
               type: 'string',
-              description: 'Job description or role of the rank',
+              description: 'Description of the rank',
               example: 'Fire Chief responsible for overall operations',
             },
             createdAt: {
@@ -1113,6 +1117,11 @@ Tokens are valid for 24 hours after login.
         FirePersonnelCreateRequest: {
           type: 'object',
           properties: {
+            serviceNumber: {
+              type: 'string',
+              description: 'Unique service number',
+              example: 'GFS-2024-001',
+            },
             name: {
               type: 'string',
               description: 'Personnel name',
@@ -1147,11 +1156,6 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Station name',
               example: 'Accra Central Fire Station',
-            },
-            region: {
-              type: 'string',
-              description: 'Region',
-              example: 'Greater Accra',
             },
           },
         },
@@ -1233,9 +1237,9 @@ Tokens are valid for 24 hours after login.
               description: 'Numeric level for ranking',
               example: 10,
             },
-            role: {
+            description: {
               type: 'string',
-              description: 'Job description or role of the rank',
+              description: 'Description of the rank',
               example: 'Fire Chief responsible for overall operations',
             },
           },

@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const firePersonnelSchema = new mongoose.Schema({
+    serviceNumber: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
+    },
     name: {
         type: String,
         required: true
@@ -39,6 +45,7 @@ const firePersonnelSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
+firePersonnelSchema.index({ serviceNumber: 1 });
 firePersonnelSchema.index({ department: 1, unit: 1 });
 firePersonnelSchema.index({ station_id: 1 });
 firePersonnelSchema.index({ station: 1 });
