@@ -7,7 +7,10 @@ import {
     deleteFireReport,
     getFireReportsByStation,
     getFireReportsByUser,
-    getFireReportStats
+    getFireReportStats,
+    dispatchFireReport,
+    declineFireReport,
+    referFireReport
 } from '../controllers/fireReportController.js';
 const router = express.Router();
 
@@ -55,6 +58,14 @@ const router = express.Router();
  *           type: string
  *           description: Station ID
  *           example: "507f1f77bcf86cd799439011"
+ *         department:
+ *           type: string
+ *           description: Department ID assigned to handle this report (automatically assigned to Operations department)
+ *           example: "507f1f77bcf86cd799439012"
+ *         unit:
+ *           type: string
+ *           description: Active unit ID assigned to handle this report (automatically assigned to active Operations unit)
+ *           example: "507f1f77bcf86cd799439013"
  *         reporterId:
  *           type: string
  *           description: ID of the reporter (User or FirePersonnel)
@@ -104,6 +115,39 @@ const router = express.Router();
  *         notes:
  *           type: string
  *           description: Additional notes
+ *         dispatched:
+ *           type: boolean
+ *           description: Whether the active unit has dispatched to handle this report
+ *           default: false
+ *         dispatchedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the unit dispatched
+ *         declined:
+ *           type: boolean
+ *           description: Whether the active unit has declined this report
+ *           default: false
+ *         declinedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the unit declined
+ *         declineReason:
+ *           type: string
+ *           description: Reason for declining the report
+ *         referred:
+ *           type: boolean
+ *           description: Whether the report has been referred to another station
+ *           default: false
+ *         referredAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the report was referred
+ *         referredToStation:
+ *           type: string
+ *           description: Station ID that this report was referred to
+ *         referReason:
+ *           type: string
+ *           description: Reason for referring the report to another station
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -263,7 +307,7 @@ const router = express.Router();
  *   post:
  *     summary: Create a new fire report
  *     tags: [Fire Reports]
- *     description: Create a new fire incident report with location, station assignment, and priority
+ *     description: Create a new fire incident report with location, station assignment, and priority. Automatically assigns to Operations department and active unit if available.
  *     requestBody:
  *       required: true
  *       content:

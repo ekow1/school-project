@@ -1,6 +1,9 @@
 import FireReport from '../models/FireReport.js';
 import User from '../models/User.js';
 import FirePersonnel from '../models/FirePersonnel.js';
+import Department from '../models/Department.js';
+import Unit from '../models/Unit.js';
+import Station from '../models/Station.js';
 import mongoose from 'mongoose';
 
 // Create Fire Report
@@ -202,11 +205,65 @@ export const createFireReport = async (req, res) => {
             });
         }
 
+        // Find Operations department and active unit
+        console.log('🔍 Finding Operations department and active unit...');
+        let operationsDepartment = null;
+        let activeUnit = null;
+
+        try {
+            // Find Operations department
+            operationsDepartment = await Department.findOne({ 
+                name: { $regex: /^operations$/i } 
+            });
+
+            if (operationsDepartment) {
+                console.log('✅ Operations department found:', operationsDepartment._id);
+
+                // Find active unit in Operations department that has personnel at this station
+                // First, find all personnel at this station
+                const stationPersonnel = await FirePersonnel.find({ 
+                    station_id: stationId 
+                }).select('unit');
+
+                const stationUnitIds = [...new Set(stationPersonnel.map(p => p.unit).filter(Boolean))];
+
+                // Find active unit in Operations that has personnel at this station
+                if (stationUnitIds.length > 0) {
+                    activeUnit = await Unit.findOne({
+                        department: operationsDepartment._id,
+                        isActive: true,
+                        _id: { $in: stationUnitIds }
+                    });
+                }
+
+                // If no active unit found with station personnel, find any active unit in Operations
+                if (!activeUnit) {
+                    activeUnit = await Unit.findOne({
+                        department: operationsDepartment._id,
+                        isActive: true
+                    });
+                }
+
+                if (activeUnit) {
+                    console.log('✅ Active unit found:', activeUnit._id, activeUnit.name);
+                } else {
+                    console.log('⚠️ No active unit found in Operations department');
+                }
+            } else {
+                console.log('⚠️ Operations department not found');
+            }
+        } catch (error) {
+            console.error('⚠️ Error finding Operations department/unit:', error.message);
+            // Continue without department/unit assignment - not critical
+        }
+
         const fireReport = new FireReport({
             incidentType,
             incidentName,
             location,
             station: stationId,
+            department: operationsDepartment?._id,
+            unit: activeUnit?._id,
             reporterId,
             reporterType,
             description,
@@ -234,6 +291,9 @@ export const createFireReport = async (req, res) => {
         console.log('🔗 Populating related data...');
         await fireReport.populate([
             { path: 'station', select: 'name location lat lng phone_number placeId' },
+            { path: 'department', select: 'name description' },
+            { path: 'unit', select: 'name shift isActive' },
+            { path: 'referredStationDetails', select: 'name location lat lng phone_number placeId' },
             { 
                 path: 'reporterDetails', 
                 select: reporterType === 'User' ? 'name phone email' : 'name rank department unit role station' 
@@ -622,6 +682,313 @@ export const getFireReportStats = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Get fire report stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Dispatch Fire Report (active unit accepts and dispatches)
+export const dispatchFireReport = async (req, res) => {
+    try {
+        const reportId = req.params.id;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(reportId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid fire report ID format'
+            });
+        }
+
+        // Find the fire report
+        const fireReport = await FireReport.findById(reportId)
+            .populate('unit')
+            .populate('department');
+
+        if (!fireReport) {
+            return res.status(404).json({
+                success: false,
+                message: 'Fire report not found'
+            });
+        }
+
+        // Check if report has been assigned to an active unit
+        if (!fireReport.unit || !fireReport.unit.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report must be assigned to an active unit before dispatch'
+            });
+        }
+
+        // Check if report has already been dispatched, declined, or referred
+        if (fireReport.dispatched) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been dispatched'
+            });
+        }
+
+        if (fireReport.declined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been declined. Cannot dispatch a declined report.'
+            });
+        }
+
+        if (fireReport.referred) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been referred to another station. Cannot dispatch a referred report.'
+            });
+        }
+
+        // Dispatch the report
+        fireReport.dispatched = true;
+        fireReport.dispatchedAt = new Date();
+        fireReport.status = 'responding'; // Update status to responding
+        await fireReport.save();
+
+        // Populate related data
+        await fireReport.populate([
+            { path: 'station', select: 'name location lat lng phone_number placeId' },
+            { path: 'department', select: 'name description' },
+            { path: 'unit', select: 'name shift isActive' },
+            { path: 'reporterDetails', select: 'name phone email' }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Fire report dispatched successfully',
+            data: fireReport
+        });
+    } catch (error) {
+        console.error('❌ Dispatch fire report error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Decline Fire Report (active unit declines)
+export const declineFireReport = async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const { reason } = req.body;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(reportId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid fire report ID format'
+            });
+        }
+
+        // Validate reason is provided
+        if (!reason || reason.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Decline reason is required'
+            });
+        }
+
+        // Find the fire report
+        const fireReport = await FireReport.findById(reportId)
+            .populate('unit')
+            .populate('department');
+
+        if (!fireReport) {
+            return res.status(404).json({
+                success: false,
+                message: 'Fire report not found'
+            });
+        }
+
+        // Check if report has been assigned to an active unit
+        if (!fireReport.unit || !fireReport.unit.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report must be assigned to an active unit before declining'
+            });
+        }
+
+        // Check if report has already been dispatched, declined, or referred
+        if (fireReport.dispatched) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been dispatched. Cannot decline a dispatched report.'
+            });
+        }
+
+        if (fireReport.declined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been declined'
+            });
+        }
+
+        if (fireReport.referred) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been referred. Cannot decline a referred report.'
+            });
+        }
+
+        // Decline the report
+        fireReport.declined = true;
+        fireReport.declinedAt = new Date();
+        fireReport.declineReason = reason.trim();
+        await fireReport.save();
+
+        // Populate related data
+        await fireReport.populate([
+            { path: 'station', select: 'name location lat lng phone_number placeId' },
+            { path: 'department', select: 'name description' },
+            { path: 'unit', select: 'name shift isActive' },
+            { path: 'reporterDetails', select: 'name phone email' }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Fire report declined successfully',
+            data: fireReport
+        });
+    } catch (error) {
+        console.error('❌ Decline fire report error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Refer Fire Report to Another Station
+export const referFireReport = async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const { stationId, reason } = req.body;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(reportId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid fire report ID format'
+            });
+        }
+
+        // Validate stationId is provided
+        if (!stationId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Station ID is required'
+            });
+        }
+
+        // Validate stationId format
+        if (!mongoose.Types.ObjectId.isValid(stationId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid station ID format'
+            });
+        }
+
+        // Validate reason is provided
+        if (!reason || reason.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Refer reason is required'
+            });
+        }
+
+        // Check if referred station exists
+        const referredStation = await Station.findById(stationId);
+        if (!referredStation) {
+            return res.status(404).json({
+                success: false,
+                message: 'Referred station not found'
+            });
+        }
+
+        // Find the fire report
+        const fireReport = await FireReport.findById(reportId)
+            .populate('unit')
+            .populate('department');
+
+        if (!fireReport) {
+            return res.status(404).json({
+                success: false,
+                message: 'Fire report not found'
+            });
+        }
+
+        // Check if report has been assigned to an active unit
+        if (!fireReport.unit || !fireReport.unit.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report must be assigned to an active unit before referring'
+            });
+        }
+
+        // Check if trying to refer to the same station
+        if (fireReport.station.toString() === stationId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot refer fire report to the same station'
+            });
+        }
+
+        // Check if report has already been dispatched, declined, or referred
+        if (fireReport.dispatched) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been dispatched. Cannot refer a dispatched report.'
+            });
+        }
+
+        if (fireReport.declined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been declined. Cannot refer a declined report.'
+            });
+        }
+
+        if (fireReport.referred) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fire report has already been referred to another station'
+            });
+        }
+
+        // Refer the report
+        fireReport.referred = true;
+        fireReport.referredAt = new Date();
+        fireReport.referredToStation = stationId;
+        fireReport.referReason = reason.trim();
+        // Update the station to the referred station
+        fireReport.station = stationId;
+        // Clear unit assignment as it will be reassigned by the new station
+        fireReport.unit = null;
+        fireReport.department = null;
+        await fireReport.save();
+
+        // Populate related data
+        await fireReport.populate([
+            { path: 'station', select: 'name location lat lng phone_number placeId' },
+            { path: 'department', select: 'name description' },
+            { path: 'unit', select: 'name shift isActive' },
+            { path: 'referredStationDetails', select: 'name location lat lng phone_number placeId' },
+            { path: 'reporterDetails', select: 'name phone email' }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Fire report referred successfully',
+            data: fireReport
+        });
+    } catch (error) {
+        console.error('❌ Refer fire report error:', error);
         res.status(500).json({
             success: false,
             message: error.message

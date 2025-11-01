@@ -5,7 +5,9 @@ import {
     getUnitById,
     updateUnit,
     deleteUnit,
-    getUnitsByDepartment
+    getUnitsByDepartment,
+    activateUnit,
+    deactivateUnit
 } from '../controllers/unitController.js';
 
 const router = express.Router();
@@ -140,10 +142,22 @@ router.get('/:id', getUnitById);
  *                 type: string
  *               color:
  *                 type: string
- *               groupNames:
+ *               groups:
  *                 type: array
+ *                 description: Array of group assignments. Can be group IDs (uses unit color) or objects {groupId, color}
  *                 items:
- *                   type: string
+ *                   oneOf:
+ *                     - type: string
+ *                       description: Group ID (color defaults to unit color)
+ *                     - type: object
+ *                       properties:
+ *                         groupId:
+ *                           type: string
+ *                         color:
+ *                           type: string
+ *               shift:
+ *                 type: string
+ *                 description: Shift identifier (required for Operations department units)
  *     responses:
  *       200:
  *         description: Unit updated successfully
@@ -231,6 +245,80 @@ router.delete('/:id', deleteUnit);
  *         description: Server error
  */
 router.get('/department/:departmentId', getUnitsByDepartment);
+
+/**
+ * @swagger
+ * /api/fire/units/{id}/activate:
+ *   post:
+ *     summary: Activate unit (set on duty)
+ *     tags: [Units]
+ *     description: Set a unit to active status. Only Operations department units can be activated. Only one unit can be active per department at a time.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unit ID
+ *     responses:
+ *       200:
+ *         description: Unit activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Unit'
+ *       400:
+ *         description: Unit cannot be activated (not Operations department or another unit is active)
+ *       404:
+ *         description: Unit not found
+ *       500:
+ *         description: Server error
+ */
+router.post('/:id/activate', activateUnit);
+
+/**
+ * @swagger
+ * /api/fire/units/{id}/deactivate:
+ *   post:
+ *     summary: Deactivate unit (set off duty)
+ *     tags: [Units]
+ *     description: Set a unit to inactive status. Manual deactivation is only allowed after 7 AM the next day from activation. Units are automatically deactivated at 8 AM the next day.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unit ID
+ *     responses:
+ *       200:
+ *         description: Unit deactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Unit'
+ *       400:
+ *         description: Unit cannot be deactivated yet (must be after 7 AM the next day)
+ *       404:
+ *         description: Unit not found
+ *       500:
+ *         description: Server error
+ */
+router.post('/:id/deactivate', deactivateUnit);
 
 export default router;
 

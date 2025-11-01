@@ -40,6 +40,18 @@ const fireReportSchema = new mongoose.Schema({
         ref: 'Station',
         required: [true, 'Station is required']
     },
+    department: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
+        required: false,
+        description: 'Department assigned to handle this report (typically Operations)'
+    },
+    unit: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Unit',
+        required: false,
+        description: 'Active unit assigned to handle this report'
+    },
     reporterId: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Reporter ID is required'],
@@ -99,6 +111,55 @@ const fireReportSchema = new mongoose.Schema({
     notes: {
         type: String,
         trim: true
+    },
+    // Action fields - only available after unit receives the alert
+    dispatched: {
+        type: Boolean,
+        default: false,
+        description: 'Whether the active unit has dispatched to handle this report'
+    },
+    dispatchedAt: {
+        type: Date,
+        required: false,
+        description: 'Timestamp when the unit dispatched'
+    },
+    declined: {
+        type: Boolean,
+        default: false,
+        description: 'Whether the active unit has declined this report'
+    },
+    declinedAt: {
+        type: Date,
+        required: false,
+        description: 'Timestamp when the unit declined'
+    },
+    declineReason: {
+        type: String,
+        trim: true,
+        required: false,
+        description: 'Reason for declining the report'
+    },
+    referred: {
+        type: Boolean,
+        default: false,
+        description: 'Whether the report has been referred to another station'
+    },
+    referredAt: {
+        type: Date,
+        required: false,
+        description: 'Timestamp when the report was referred'
+    },
+    referredToStation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Station',
+        required: false,
+        description: 'Station ID that this report was referred to'
+    },
+    referReason: {
+        type: String,
+        trim: true,
+        required: false,
+        description: 'Reason for referring the report to another station'
     }
 }, { 
     timestamps: true,
@@ -130,13 +191,27 @@ fireReportSchema.virtual('reporterDetails', {
     justOne: true
 });
 
+// Virtual for referred station details
+fireReportSchema.virtual('referredStationDetails', {
+    ref: 'Station',
+    localField: 'referredToStation',
+    foreignField: '_id',
+    justOne: true
+});
+
 // Indexes for efficient queries
 fireReportSchema.index({ station: 1 });
+fireReportSchema.index({ department: 1 });
+fireReportSchema.index({ unit: 1 });
 fireReportSchema.index({ reporterId: 1 });
 fireReportSchema.index({ reporterType: 1 });
 fireReportSchema.index({ status: 1 });
 fireReportSchema.index({ priority: 1 });
 fireReportSchema.index({ reportedAt: -1 });
+fireReportSchema.index({ dispatched: 1 });
+fireReportSchema.index({ declined: 1 });
+fireReportSchema.index({ referred: 1 });
+fireReportSchema.index({ referredToStation: 1 });
 fireReportSchema.index({ 'location.coordinates.latitude': 1, 'location.coordinates.longitude': 1 });
 
 // Pre-save middleware to validate station exists

@@ -94,6 +94,10 @@ Tokens are valid for 24 hours after login.
         description: 'Unit management within departments. Supports CRUD operations and department-based filtering.',
       },
       {
+        name: 'Groups',
+        description: 'Universal group management. Groups are shared across all units. When assigned to a unit, group color syncs with unit color.',
+      },
+      {
         name: 'Ranks',
         description: 'Fire service rank management (CFO, DO, SO, etc.) with initials support.',
       },
@@ -910,19 +914,77 @@ Tokens are valid for 24 hours after login.
             department: {
               $ref: '#/components/schemas/Department',
             },
-            groupNames: {
+            groups: {
               type: 'array',
-              description: 'Array of group names',
+              description: 'Array of group assignments. Each group has groupId and color (unit-specific).',
               items: {
-                type: 'string',
+                type: 'object',
+                properties: {
+                  groupId: {
+                    $ref: '#/components/schemas/Group',
+                  },
+                  color: {
+                    type: 'string',
+                    description: 'Group color for this unit',
+                    example: '#FF0000',
+                  },
+                },
               },
-              example: ['Group 1', 'Group 2'],
+            },
+            shift: {
+              type: 'string',
+              description: 'Shift identifier (e.g., "Day", "Night", "A", "B"). Required for Operations department units.',
+              example: 'Day',
+            },
+            isActive: {
+              type: 'boolean',
+              description: 'Indicates if this unit is currently on duty. Only one unit can be active per department.',
+              example: false,
+              default: false,
+            },
+            activatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Timestamp when the unit was activated. Used for automatic deactivation at 8 AM the next day.',
+              example: '2024-01-15T14:30:00.000Z',
             },
             personnel: {
               type: 'array',
               description: 'Personnel in this unit',
               items: {
                 $ref: '#/components/schemas/FirePersonnel',
+              },
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        Group: {
+          type: 'object',
+          properties: {
+            _id: {
+              type: 'string',
+              description: 'Group ID',
+              example: '507f1f77bcf86cd799439020',
+            },
+            name: {
+              type: 'string',
+              description: 'Group name (unique)',
+              example: 'Alpha Team',
+            },
+            units: {
+              type: 'array',
+              description: 'Units that have this group assigned',
+              items: {
+                $ref: '#/components/schemas/Unit',
               },
             },
             createdAt: {
@@ -1164,13 +1226,42 @@ Tokens are valid for 24 hours after login.
               description: 'Department ID',
               example: '507f1f77bcf86cd799439011',
             },
-            groupNames: {
+            groups: {
               type: 'array',
-              description: 'Array of group names (optional)',
+              description: 'Array of group assignments. Can be array of group IDs (will use unit color) or array of objects {groupId, color}.',
               items: {
-                type: 'string',
+                oneOf: [
+                  {
+                    type: 'string',
+                    description: 'Group ID (color will default to unit color)',
+                    example: '507f1f77bcf86cd799439020',
+                  },
+                  {
+                    type: 'object',
+                    properties: {
+                      groupId: {
+                        type: 'string',
+                        description: 'Group ID',
+                        example: '507f1f77bcf86cd799439020',
+                      },
+                      color: {
+                        type: 'string',
+                        description: 'Group color for this unit',
+                        example: '#FF0000',
+                      },
+                    },
+                  },
+                ],
               },
-              example: ['Group 1', 'Group 2'],
+              example: [
+                '507f1f77bcf86cd799439020',
+                { groupId: '507f1f77bcf86cd799439021', color: '#00FF00' },
+              ],
+            },
+            shift: {
+              type: 'string',
+              description: 'Shift identifier (required for Operations department units)',
+              example: 'Day',
             },
           },
         },
@@ -1212,6 +1303,33 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Description of the rank',
               example: 'Fire Chief responsible for overall operations',
+            },
+          },
+        },
+        GroupCreateRequest: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Group name (must be unique)',
+              example: 'Alpha Team',
+            },
+          },
+        },
+        GroupResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true,
+            },
+            message: {
+              type: 'string',
+              example: 'Group created successfully',
+            },
+            data: {
+              $ref: '#/components/schemas/Group',
             },
           },
         },

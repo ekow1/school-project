@@ -8,12 +8,15 @@ import stationRoutes from './routes/stationRoutes.js';
 import firePersonnelRoutes from './routes/firePersonnelRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import unitRoutes from './routes/unitRoutes.js';
+import groupRoutes from './routes/groupRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import rankRoutes from './routes/rankRoutes.js';
 import superAdminRoutes from './routes/superAdminRoutes.js';
 import fireReportRoutes from './routes/fireReportRoutes.js';
 import verifyToken from './middleware/verifyToken.js';
 import { swaggerUi, specs } from './swagger.js';
+import cron from 'node-cron';
+import { autoDeactivateUnits } from './controllers/unitController.js';
 
 dotenv.config();
 const app = express();
@@ -43,6 +46,7 @@ app.use('/api/fire/stations', stationRoutes);
 app.use('/api/fire/personnel', firePersonnelRoutes);
 app.use('/api/fire/departments', departmentRoutes);
 app.use('/api/fire/units', unitRoutes);
+app.use('/api/fire/groups', groupRoutes);
 app.use('/api/fire/roles', roleRoutes);
 app.use('/api/fire/ranks', rankRoutes);
 app.use('/api/fire/reports', fireReportRoutes);
@@ -304,6 +308,23 @@ app.get('/', (req, res) => {
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.log('✅ MongoDB connected successfully');
+    
+    // Schedule automatic unit deactivation at 8 AM daily
+    // Cron format: minute hour day month weekday
+    // "0 8 * * *" = 8:00 AM every day
+    cron.schedule('0 8 * * *', async () => {
+        console.log('⏰ Scheduled task: Running automatic unit deactivation...');
+        try {
+            await autoDeactivateUnits();
+        } catch (error) {
+            console.error('❌ Scheduled task error:', error);
+        }
+    }, {
+        timezone: "Africa/Accra" // Ghana timezone (GMT+0)
+    });
+    
+    console.log('✅ Scheduled task configured: Auto-deactivate units daily at 8:00 AM (GMT+0)');
+    
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`📍 Local: http://localhost:${PORT}`);
