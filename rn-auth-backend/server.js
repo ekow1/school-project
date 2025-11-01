@@ -38,14 +38,14 @@ app.use('/api/profile', verifyToken, profileRoutes);
 // // OTP Routes (public - no auth required)
 // app.use('/api/otp', otpRoutes);
 
-// Fire Service Routes (all protected)
-app.use('/api/fire/stations', verifyToken, stationRoutes);
-app.use('/api/fire/personnel', verifyToken, firePersonnelRoutes);
-app.use('/api/fire/departments', verifyToken, departmentRoutes);
-app.use('/api/fire/subdivisions', verifyToken, subdivisionRoutes);
-app.use('/api/fire/roles', verifyToken, roleRoutes);
-app.use('/api/fire/ranks', verifyToken, rankRoutes);
-app.use('/api/fire/reports', verifyToken, fireReportRoutes);
+// Fire Service Routes
+app.use('/api/fire/stations', stationRoutes);
+app.use('/api/fire/personnel', firePersonnelRoutes);
+app.use('/api/fire/departments', departmentRoutes);
+app.use('/api/fire/subdivisions', subdivisionRoutes);
+app.use('/api/fire/roles', roleRoutes);
+app.use('/api/fire/ranks', rankRoutes);
+app.use('/api/fire/reports', fireReportRoutes);
 
 // Super Admin routes (mixed - some public, some protected)
 // The routes file handles which ones need auth
@@ -56,8 +56,6 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *   post:
  *     summary: Create a new fire station (with intelligent upsert)
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Creates a new fire station or updates existing one if duplicate detected. Uses coordinates, location, or phone number for duplicate detection.
  *     requestBody:
  *       required: true
@@ -102,13 +100,9 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *   get:
  *     summary: Get all fire stations
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Retrieve all fire stations with optional region filtering
  *     parameters:
  *       - in: query
@@ -135,16 +129,12 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Station'
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *
  * @swagger
  * /api/fire/stations/bulk:
  *   post:
  *     summary: Bulk create/update fire stations
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Create or update multiple fire stations in one request. Each station is processed individually with upsert logic.
  *     requestBody:
  *       required: true
@@ -182,16 +172,12 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *
  * @swagger
  * /api/fire/stations/{id}:
  *   get:
  *     summary: Get fire station by ID
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Retrieve a specific fire station by its ID
  *     parameters:
  *       - in: path
@@ -218,13 +204,9 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *         description: Invalid station ID format
  *       404:
  *         description: Station not found
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *   put:
  *     summary: Update fire station
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Update an existing fire station
  *     parameters:
  *       - in: path
@@ -260,13 +242,9 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *         description: Invalid input data
  *       404:
  *         description: Station not found
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *   delete:
  *     summary: Delete fire station
  *     tags: [Stations]
- *     security:
- *       - bearerAuth: []
  *     description: Delete a fire station by its ID
  *     parameters:
  *       - in: path
@@ -294,8 +272,6 @@ app.use('/api/fire/reports', verifyToken, fireReportRoutes);
  *         description: Invalid station ID format
  *       404:
  *         description: Station not found
- *       401:
- *         description: Unauthorized - Invalid or missing token
  *
  * @swagger
  * /api/health:

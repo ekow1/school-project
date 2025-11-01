@@ -9,8 +9,6 @@ import {
     getFireReportsByUser,
     getFireReportStats
 } from '../controllers/fireReportController.js';
-import verifyToken from '../middleware/verifyToken.js';
-
 const router = express.Router();
 
 /**
@@ -257,8 +255,6 @@ const router = express.Router();
  *     summary: Create a new fire report
  *     tags: [Fire Reports]
  *     description: Create a new fire incident report with location, station assignment, and priority
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -302,12 +298,10 @@ const router = express.Router();
  *                   $ref: '#/components/schemas/FireReport'
  *       400:
  *         description: Validation error
- *       401:
- *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.post('/', verifyToken, createFireReport);
+router.post('/', createFireReport);
 
 /**
  * @swagger
@@ -316,8 +310,6 @@ router.post('/', verifyToken, createFireReport);
  *     summary: Get all fire reports
  *     tags: [Fire Reports]
  *     description: Retrieve all fire reports with optional filtering and pagination
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: status
@@ -375,8 +367,6 @@ router.post('/', verifyToken, createFireReport);
  *                     total:
  *                       type: integer
  *                       example: 150
- *       401:
- *         description: Unauthorized
  *       500:
  *         description: Server error
  */
@@ -389,8 +379,6 @@ router.get('/',  getAllFireReports);
  *     summary: Get fire report statistics
  *     tags: [Fire Reports]
  *     description: Get comprehensive statistics about fire reports
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: stationId
@@ -422,12 +410,10 @@ router.get('/',  getAllFireReports);
  *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/FireReportStats'
- *       401:
- *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.get('/stats', verifyToken, getFireReportStats);
+router.get('/stats', getFireReportStats);
 
 /**
  * @swagger
@@ -436,8 +422,6 @@ router.get('/stats', verifyToken, getFireReportStats);
  *     summary: Get fire reports by station
  *     tags: [Fire Reports]
  *     description: Retrieve all fire reports for a specific station
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: stationId
@@ -498,12 +482,10 @@ router.get('/stats', verifyToken, getFireReportStats);
  *                       example: 50
  *       400:
  *         description: Invalid station ID
- *       401:
- *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.get('/station/:stationId', verifyToken, getFireReportsByStation);
+router.get('/station/:stationId', getFireReportsByStation);
 
 /**
  * @swagger
@@ -512,8 +494,6 @@ router.get('/station/:stationId', verifyToken, getFireReportsByStation);
  *     summary: Get fire reports by user
  *     tags: [Fire Reports]
  *     description: Retrieve all fire reports created by a specific user
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -568,12 +548,10 @@ router.get('/station/:stationId', verifyToken, getFireReportsByStation);
  *                       example: 25
  *       400:
  *         description: Invalid user ID
- *       401:
- *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.get('/user/:userId', verifyToken, getFireReportsByUser);
+router.get('/user/:userId', getFireReportsByUser);
 
 /**
  * @swagger
@@ -582,8 +560,6 @@ router.get('/user/:userId', verifyToken, getFireReportsByUser);
  *     summary: Get fire report by ID
  *     tags: [Fire Reports]
  *     description: Retrieve a specific fire report by its ID
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -606,14 +582,12 @@ router.get('/user/:userId', verifyToken, getFireReportsByUser);
  *                   $ref: '#/components/schemas/FireReport'
  *       400:
  *         description: Invalid fire report ID
- *       401:
- *         description: Unauthorized
  *       404:
  *         description: Fire report not found
  *       500:
  *         description: Server error
  */
-router.get('/:id', verifyToken, getFireReportById);
+router.get('/:id', getFireReportById);
 
 /**
  * @swagger
@@ -622,8 +596,6 @@ router.get('/:id', verifyToken, getFireReportById);
  *     summary: Update fire report
  *     tags: [Fire Reports]
  *     description: Update an existing fire report
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -675,14 +647,12 @@ router.get('/:id', verifyToken, getFireReportById);
  *                   $ref: '#/components/schemas/FireReport'
  *       400:
  *         description: Validation error
- *       401:
- *         description: Unauthorized
  *       404:
  *         description: Fire report not found
  *       500:
  *         description: Server error
  */
-router.put('/:id', verifyToken, updateFireReport);
+router.put('/:id', updateFireReport);
 
 /**
  * @swagger
@@ -691,8 +661,6 @@ router.put('/:id', verifyToken, updateFireReport);
  *     summary: Delete fire report
  *     tags: [Fire Reports]
  *     description: Delete a fire report
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -716,13 +684,11 @@ router.put('/:id', verifyToken, updateFireReport);
  *                   example: "Fire report deleted successfully"
  *       400:
  *         description: Invalid fire report ID
- *       401:
- *         description: Unauthorized
  *       404:
  *         description: Fire report not found
  *       500:
  *         description: Server error
  */
-router.delete('/:id', verifyToken, deleteFireReport);
+router.delete('/:id', deleteFireReport);
 
 export default router;

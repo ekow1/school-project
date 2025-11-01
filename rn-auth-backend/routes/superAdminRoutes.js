@@ -1,5 +1,4 @@
 import express from 'express';
-import verifyToken from '../middleware/verifyToken.js';
 import {
     createSuperAdmin,
     loginSuperAdmin,
@@ -19,13 +18,13 @@ router.post('/register', createSuperAdmin);
 router.post('/login', loginSuperAdmin);
 
 // Protected routes (require authentication)
-router.get('/', verifyToken, getAllSuperAdmins);
-router.get('/:id', verifyToken, getSuperAdminById);
-router.patch('/:id', verifyToken, updateSuperAdmin);
-router.delete('/:id', verifyToken, deleteSuperAdmin);
-router.post('/:id/change-password', verifyToken, changePassword);
-router.post('/:id/departments/add', verifyToken, addManagedDepartment);
-router.post('/:id/departments/remove', verifyToken, removeManagedDepartment);
+router.get('/', getAllSuperAdmins);
+router.get('/:id', getSuperAdminById);
+router.patch('/:id', updateSuperAdmin);
+router.delete('/:id', deleteSuperAdmin);
+router.post('/:id/change-password', changePassword);
+router.post('/:id/departments/add', addManagedDepartment);
+router.post('/:id/departments/remove', removeManagedDepartment);
 
 export default router;
 
