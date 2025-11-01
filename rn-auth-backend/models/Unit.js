@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-const subdivisionSchema = new mongoose.Schema({
+const unitSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Subdivision name is required'],
+        required: [true, 'Unit name is required'],
         trim: true
     },
     color: {
@@ -14,6 +14,10 @@ const subdivisionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Department',
         required: [true, 'Department is required']
+    },
+    groupNames: {
+        type: [String],
+        default: []
     }
 }, { 
     timestamps: true,
@@ -21,15 +25,15 @@ const subdivisionSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// Virtual for personnel in this subdivision
-subdivisionSchema.virtual('personnel', {
+// Virtual for personnel in this unit
+unitSchema.virtual('personnel', {
     ref: 'FirePersonnel',
     localField: '_id',
-    foreignField: 'subdivision'
+    foreignField: 'unit'
 });
 
-// Compound index for unique subdivision per department
-subdivisionSchema.index({ name: 1, department: 1 }, { unique: true });
+// Compound index for unique unit per department
+unitSchema.index({ name: 1, department: 1 }, { unique: true });
 
-export default mongoose.model('Subdivision', subdivisionSchema);
+export default mongoose.model('Unit', unitSchema);
 

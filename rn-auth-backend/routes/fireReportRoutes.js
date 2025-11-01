@@ -55,10 +55,15 @@ const router = express.Router();
  *           type: string
  *           description: Station ID
  *           example: "507f1f77bcf86cd799439011"
- *         userId:
+ *         reporterId:
  *           type: string
- *           description: User ID who reported
+ *           description: ID of the reporter (User or FirePersonnel)
  *           example: "507f1f77bcf86cd799439011"
+ *         reporterType:
+ *           type: string
+ *           enum: [User, FirePersonnel]
+ *           description: Type of reporter (automatically determined from ID)
+ *           example: "User"
  *         reportedAt:
  *           type: string
  *           format: date-time
@@ -115,6 +120,10 @@ const router = express.Router();
  *         - station
  *         - userId
  *       properties:
+ *         userId:
+ *           type: string
+ *           description: ID of the reporter (can be User ID or FirePersonnel ID - automatically detected)
+ *           example: "507f1f77bcf86cd799439011"
  *         incidentType:
  *           type: string
  *           enum: [fire, rescue, medical, other]

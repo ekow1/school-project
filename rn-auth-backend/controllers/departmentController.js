@@ -63,7 +63,7 @@ export const getAllDepartments = async (req, res) => {
 
         const departments = await Department.find(filter)
             .populate('station_id')
-            .populate('subdivisions')
+            .populate('units')
             .sort({ name: 1 });
 
         res.status(200).json({
@@ -92,7 +92,7 @@ export const getDepartmentById = async (req, res) => {
 
         const department = await Department.findById(req.params.id)
             .populate('station_id')
-            .populate('subdivisions')
+            .populate('units')
             .populate('personnel');
 
         if (!department) {
@@ -217,7 +217,7 @@ export const getDepartmentsByStation = async (req, res) => {
 
         const departments = await Department.find({ station_id: req.params.stationId })
             .populate('station_id')
-            .populate('subdivisions')
+            .populate('units')
             .sort({ name: 1 });
 
         res.status(200).json({

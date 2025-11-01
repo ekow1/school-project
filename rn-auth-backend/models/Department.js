@@ -21,9 +21,9 @@ const departmentSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// Virtual for subdivisions
-departmentSchema.virtual('subdivisions', {
-    ref: 'Subdivision',
+// Virtual for units
+departmentSchema.virtual('units', {
+    ref: 'Unit',
     localField: '_id',
     foreignField: 'department'
 });

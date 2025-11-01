@@ -17,6 +17,12 @@ const rankSchema = new mongoose.Schema({
     level: {
         type: Number,
         default: 0
+    },
+    role: {
+        type: String,
+        required: false,
+        trim: true,
+        description: 'Job description or role of the rank'
     }
 }, { 
     timestamps: true 

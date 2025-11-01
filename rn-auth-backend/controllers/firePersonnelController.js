@@ -1,5 +1,5 @@
 import FirePersonnel from '../models/FirePersonnel.js';
-import Subdivision from '../models/Subdivision.js';
+import Subdivision from '../models/Unit.js';
 import Department from '../models/Department.js';
 import Station from '../models/Station.js';
 import mongoose from 'mongoose';
@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 // Create FirePersonnel
 export const createFirePersonnel = async (req, res) => {
     try {
-        const { name, rank, department, subdivision, role, station_id, station, region, watchroom, crew } = req.body;
+        const { name, rank, department, subdivision, role, station_id, station, region } = req.body;
 
         // Validate station_id if provided
         if (station_id) {
@@ -28,43 +28,33 @@ export const createFirePersonnel = async (req, res) => {
             }
         }
 
-        // Validate subdivision-department relationship if both provided
+        // Validate unit-department relationship if both provided
         if (subdivision && department) {
             const subdivisionDoc = await Subdivision.findById(subdivision).populate('department');
             if (!subdivisionDoc) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Subdivision not found'
+                    message: 'Unit not found'
                 });
             }
 
             if (subdivisionDoc.department._id.toString() !== department) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Subdivision does not belong to the specified department'
+                    message: 'Unit does not belong to the specified department'
                 });
-            }
-
-            // Validate watchroom and crew for Operations department
-            if (subdivisionDoc.department.name === 'Operations') {
-                if (!watchroom || !crew) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Watchroom and crew are required for Operations department personnel'
-                    });
-                }
             }
         }
 
         const personnel = new FirePersonnel({
-            name, rank, department, subdivision, role, station_id, station, region, watchroom, crew
+            name, rank, department, unit: subdivision, role, station_id, station, region
         });
         await personnel.save();
 
         const populatedPersonnel = await FirePersonnel.findById(personnel._id)
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id');
 
@@ -88,7 +78,7 @@ export const getAllFirePersonnel = async (req, res) => {
         const filter = {};
 
         if (department) filter.department = department;
-        if (subdivision) filter.subdivision = subdivision;
+        if (subdivision) filter.unit = subdivision;
         if (station_id) {
             if (!mongoose.Types.ObjectId.isValid(station_id)) {
                 return res.status(400).json({
@@ -105,7 +95,7 @@ export const getAllFirePersonnel = async (req, res) => {
         const personnel = await FirePersonnel.find(filter)
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id')
             .sort({ name: 1 });
@@ -137,7 +127,7 @@ export const getFirePersonnelById = async (req, res) => {
         const personnel = await FirePersonnel.findById(req.params.id)
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id');
 
@@ -171,7 +161,7 @@ export const updateFirePersonnel = async (req, res) => {
             });
         }
 
-        const { department, subdivision, station_id, watchroom, crew } = req.body;
+        const { department, subdivision, station_id } = req.body;
 
         // Validate station_id if provided
         if (station_id) {
@@ -210,32 +200,22 @@ export const updateFirePersonnel = async (req, res) => {
                 });
             }
 
-            // Get existing personnel to check department
-            const existingPersonnel = await FirePersonnel.findById(req.params.id);
-            const targetDepartment = department || existingPersonnel.department;
+        }
 
-            // Check if it's Operations department
-            if (subdivisionDoc.department.name === 'Operations') {
-                const newWatchroom = watchroom !== undefined ? watchroom : existingPersonnel.watchroom;
-                const newCrew = crew !== undefined ? crew : existingPersonnel.crew;
-
-                if (!newWatchroom || !newCrew) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Watchroom and crew are required for Operations department personnel'
-                    });
-                }
-            }
+        const updateData = { ...req.body };
+        if (subdivision) {
+            updateData.unit = subdivision;
+            delete updateData.subdivision;
         }
 
         const personnel = await FirePersonnel.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
         )
         .populate('rank')
         .populate('department')
-        .populate('subdivision')
+        .populate('unit')
         .populate('role')
         .populate('station_id');
 
@@ -302,10 +282,10 @@ export const getPersonnelBySubdivision = async (req, res) => {
             });
         }
 
-        const personnel = await FirePersonnel.find({ subdivision: req.params.subdivisionId })
+        const personnel = await FirePersonnel.find({ unit: req.params.subdivisionId })
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id')
             .sort({ name: 1 });
@@ -337,7 +317,7 @@ export const getPersonnelByDepartment = async (req, res) => {
         const personnel = await FirePersonnel.find({ department: req.params.departmentId })
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id')
             .sort({ name: 1 });
@@ -369,7 +349,7 @@ export const getPersonnelByStation = async (req, res) => {
         const personnel = await FirePersonnel.find({ station_id: req.params.stationId })
             .populate('rank')
             .populate('department')
-            .populate('subdivision')
+            .populate('unit')
             .populate('role')
             .populate('station_id')
             .sort({ name: 1 });

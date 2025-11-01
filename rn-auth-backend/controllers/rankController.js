@@ -3,7 +3,7 @@ import Rank from '../models/Rank.js';
 // Create Rank
 export const createRank = async (req, res) => {
     try {
-        const { name, initials, level } = req.body;
+        const { name, initials, level, role } = req.body;
 
         if (!name || !initials) {
             return res.status(400).json({ 
@@ -12,7 +12,7 @@ export const createRank = async (req, res) => {
             });
         }
 
-        const rank = new Rank({ name, initials: initials.toUpperCase(), level });
+        const rank = new Rank({ name, initials: initials.toUpperCase(), level, role });
         await rank.save();
 
         res.status(201).json({ 
@@ -79,8 +79,8 @@ export const getRankById = async (req, res) => {
 // Update Rank
 export const updateRank = async (req, res) => {
     try {
-        const { name, initials, level } = req.body;
-        const updates = { name, level };
+        const { name, initials, level, role } = req.body;
+        const updates = { name, level, role };
         
         if (initials) {
             updates.initials = initials.toUpperCase();

@@ -40,10 +40,15 @@ const fireReportSchema = new mongoose.Schema({
         ref: 'Station',
         required: [true, 'Station is required']
     },
-    userId: {
+    reporterId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'User ID is required']
+        required: [true, 'Reporter ID is required'],
+        refPath: 'reporterType'
+    },
+    reporterType: {
+        type: String,
+        enum: ['User', 'FirePersonnel'],
+        required: true
     },
     reportedAt: {
         type: Date,
@@ -117,17 +122,18 @@ fireReportSchema.virtual('stationDetails', {
     justOne: true
 });
 
-// Virtual for user details
-fireReportSchema.virtual('userDetails', {
-    ref: 'User',
-    localField: 'userId',
+// Virtual for reporter details
+fireReportSchema.virtual('reporterDetails', {
+    refPath: 'reporterType',
+    localField: 'reporterId',
     foreignField: '_id',
     justOne: true
 });
 
 // Indexes for efficient queries
 fireReportSchema.index({ station: 1 });
-fireReportSchema.index({ userId: 1 });
+fireReportSchema.index({ reporterId: 1 });
+fireReportSchema.index({ reporterType: 1 });
 fireReportSchema.index({ status: 1 });
 fireReportSchema.index({ priority: 1 });
 fireReportSchema.index({ reportedAt: -1 });
@@ -147,13 +153,21 @@ fireReportSchema.pre('save', async function(next) {
     }
 });
 
-// Pre-save middleware to validate user exists
+// Pre-save middleware to validate reporter exists
 fireReportSchema.pre('save', async function(next) {
     try {
-        const User = mongoose.model('User');
-        const user = await User.findById(this.userId);
-        if (!user) {
-            throw new Error('Referenced user does not exist');
+        if (this.reporterType === 'User') {
+            const User = mongoose.model('User');
+            const user = await User.findById(this.reporterId);
+            if (!user) {
+                throw new Error('Referenced user does not exist');
+            }
+        } else if (this.reporterType === 'FirePersonnel') {
+            const FirePersonnel = mongoose.model('FirePersonnel');
+            const personnel = await FirePersonnel.findById(this.reporterId);
+            if (!personnel) {
+                throw new Error('Referenced fire personnel does not exist');
+            }
         }
         next();
     } catch (error) {

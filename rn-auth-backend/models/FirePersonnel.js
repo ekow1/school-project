@@ -3,21 +3,21 @@ import mongoose from 'mongoose';
 const firePersonnelSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: false
+        required: true
     },
     rank: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Rank',
-        required: false
+        required: true
     },
     department: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Department',
         required: false
     },
-    subdivision: {
+    unit: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subdivision',
+        ref: 'Unit',
         required: false
     },
     role: {
@@ -32,27 +32,16 @@ const firePersonnelSchema = new mongoose.Schema({
     },
     station: {
         type: String,
-        required: false
+        required: true
     },
-    region: {
-        type: String,
-        required: false
-    },
-    // Operations Department specific fields (optional, validation in controller)
-    watchroom: {
-        type: String
-    },
-    crew: {
-        type: String
-    }
 }, { 
     timestamps: true 
 });
 
 // Index for efficient queries
-firePersonnelSchema.index({ department: 1, subdivision: 1 });
+firePersonnelSchema.index({ department: 1, unit: 1 });
 firePersonnelSchema.index({ station_id: 1 });
-firePersonnelSchema.index({ station: 1, region: 1 });
+firePersonnelSchema.index({ station: 1 });
 firePersonnelSchema.index({ rank: 1 });
 
 export default mongoose.model('FirePersonnel', firePersonnelSchema);

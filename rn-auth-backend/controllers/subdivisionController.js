@@ -1,32 +1,32 @@
-import Subdivision from '../models/Subdivision.js';
+import Subdivision from '../models/Unit.js';
 
-// Create Subdivision
+// Create Unit
 export const createSubdivision = async (req, res) => {
     try {
-        const { name, color, department } = req.body;
+        const { name, color, department, groupNames } = req.body;
 
         if (!name || !department) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Subdivision name and department are required' 
+                message: 'Unit name and department are required' 
             });
         }
 
-        const subdivision = new Subdivision({ name, color, department });
-        await subdivision.save();
+        const unit = new Subdivision({ name, color, department, groupNames });
+        await unit.save();
 
-        const populatedSubdivision = await Subdivision.findById(subdivision._id).populate('department');
+        const populatedUnit = await Subdivision.findById(unit._id).populate('department');
 
         res.status(201).json({ 
             success: true, 
-            message: 'Subdivision created successfully', 
-            data: populatedSubdivision 
+            message: 'Unit created successfully', 
+            data: populatedUnit 
         });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Subdivision name already exists for this department' 
+                message: 'Unit name already exists for this department' 
             });
         }
         res.status(500).json({ 
@@ -36,17 +36,17 @@ export const createSubdivision = async (req, res) => {
     }
 };
 
-// Get All Subdivisions
+// Get All Units
 export const getAllSubdivisions = async (req, res) => {
     try {
-        const subdivisions = await Subdivision.find()
+        const units = await Subdivision.find()
             .populate('department')
             .sort({ name: 1 });
         
         res.status(200).json({ 
             success: true, 
-            count: subdivisions.length, 
-            data: subdivisions 
+            count: units.length, 
+            data: units 
         });
     } catch (error) {
         res.status(500).json({ 
@@ -56,23 +56,23 @@ export const getAllSubdivisions = async (req, res) => {
     }
 };
 
-// Get Subdivision By ID
+// Get Unit By ID
 export const getSubdivisionById = async (req, res) => {
     try {
-        const subdivision = await Subdivision.findById(req.params.id)
+        const unit = await Subdivision.findById(req.params.id)
             .populate('department')
             .populate('personnel');
 
-        if (!subdivision) {
+        if (!unit) {
             return res.status(404).json({ 
                 success: false, 
-                message: 'Subdivision not found' 
+                message: 'Unit not found' 
             });
         }
 
         res.status(200).json({ 
             success: true, 
-            data: subdivision 
+            data: unit 
         });
     } catch (error) {
         res.status(500).json({ 
@@ -82,34 +82,34 @@ export const getSubdivisionById = async (req, res) => {
     }
 };
 
-// Update Subdivision
+// Update Unit
 export const updateSubdivision = async (req, res) => {
     try {
-        const { name, color, department } = req.body;
+        const { name, color, department, groupNames } = req.body;
 
-        const subdivision = await Subdivision.findByIdAndUpdate(
+        const unit = await Subdivision.findByIdAndUpdate(
             req.params.id,
-            { name, color, department },
+            { name, color, department, groupNames },
             { new: true, runValidators: true }
         ).populate('department');
 
-        if (!subdivision) {
+        if (!unit) {
             return res.status(404).json({ 
                 success: false, 
-                message: 'Subdivision not found' 
+                message: 'Unit not found' 
             });
         }
 
         res.status(200).json({ 
             success: true, 
-            message: 'Subdivision updated successfully', 
-            data: subdivision 
+            message: 'Unit updated successfully', 
+            data: unit 
         });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Subdivision name already exists for this department' 
+                message: 'Unit name already exists for this department' 
             });
         }
         res.status(500).json({ 
@@ -119,21 +119,21 @@ export const updateSubdivision = async (req, res) => {
     }
 };
 
-// Delete Subdivision
+// Delete Unit
 export const deleteSubdivision = async (req, res) => {
     try {
-        const subdivision = await Subdivision.findByIdAndDelete(req.params.id);
+        const unit = await Subdivision.findByIdAndDelete(req.params.id);
 
-        if (!subdivision) {
+        if (!unit) {
             return res.status(404).json({ 
                 success: false, 
-                message: 'Subdivision not found' 
+                message: 'Unit not found' 
             });
         }
 
         res.status(200).json({ 
             success: true, 
-            message: 'Subdivision deleted successfully' 
+            message: 'Unit deleted successfully' 
         });
     } catch (error) {
         res.status(500).json({ 
@@ -143,17 +143,17 @@ export const deleteSubdivision = async (req, res) => {
     }
 };
 
-// Get Subdivisions by Department
+// Get Units by Department
 export const getSubdivisionsByDepartment = async (req, res) => {
     try {
-        const subdivisions = await Subdivision.find({ department: req.params.departmentId })
+        const units = await Subdivision.find({ department: req.params.departmentId })
             .populate('department')
             .sort({ name: 1 });
         
         res.status(200).json({ 
             success: true, 
-            count: subdivisions.length, 
-            data: subdivisions 
+            count: units.length, 
+            data: units 
         });
     } catch (error) {
         res.status(500).json({ 

@@ -87,11 +87,11 @@ Tokens are valid for 24 hours after login.
       },
       {
         name: 'Personnel',
-        description: 'Fire service personnel management with dual reference structure (station + department/subdivision).',
+        description: 'Fire service personnel management with dual reference structure (station + department/unit).',
       },
       {
         name: 'Subdivisions',
-        description: 'Subdivision management within departments. Supports CRUD operations and department-based filtering.',
+        description: 'Unit management within departments. Supports CRUD operations and department-based filtering.',
       },
       {
         name: 'Ranks',
@@ -827,9 +827,9 @@ Tokens are valid for 24 hours after login.
             station: {
               $ref: '#/components/schemas/Station',
             },
-            subdivisions: {
+            units: {
               type: 'array',
-              description: 'Subdivisions in this department',
+              description: 'Units in this department',
               items: {
                 $ref: '#/components/schemas/Subdivision',
               },
@@ -872,7 +872,7 @@ Tokens are valid for 24 hours after login.
             department: {
               $ref: '#/components/schemas/Department',
             },
-            subdivision: {
+            unit: {
               $ref: '#/components/schemas/Subdivision',
             },
             role: {
@@ -893,16 +893,6 @@ Tokens are valid for 24 hours after login.
               description: 'Region',
               example: 'Greater Accra',
             },
-            watchroom: {
-              type: 'string',
-              description: 'Watchroom (required for Operations department)',
-              example: 'Watch Room 1',
-            },
-            crew: {
-              type: 'string',
-              description: 'Crew (required for Operations department)',
-              example: 'Crew 1',
-            },
             createdAt: {
               type: 'string',
               format: 'date-time',
@@ -920,25 +910,33 @@ Tokens are valid for 24 hours after login.
           properties: {
             _id: {
               type: 'string',
-              description: 'Subdivision ID',
+              description: 'Unit ID',
               example: '507f1f77bcf86cd799439011',
             },
             name: {
               type: 'string',
-              description: 'Subdivision name',
+              description: 'Unit name',
               example: 'Watch A',
             },
             color: {
               type: 'string',
-              description: 'Subdivision color',
+              description: 'Unit color',
               example: '#FF0000',
             },
             department: {
               $ref: '#/components/schemas/Department',
             },
+            groupNames: {
+              type: 'array',
+              description: 'Array of group names',
+              items: {
+                type: 'string',
+              },
+              example: ['Group 1', 'Group 2'],
+            },
             personnel: {
               type: 'array',
-              description: 'Personnel in this subdivision',
+              description: 'Personnel in this unit',
               items: {
                 $ref: '#/components/schemas/FirePersonnel',
               },
@@ -972,6 +970,16 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Rank initials',
               example: 'CFO',
+            },
+            level: {
+              type: 'number',
+              description: 'Numeric level for ranking',
+              example: 10,
+            },
+            role: {
+              type: 'string',
+              description: 'Job description or role of the rank',
+              example: 'Fire Chief responsible for overall operations',
             },
             createdAt: {
               type: 'string',
@@ -1122,7 +1130,7 @@ Tokens are valid for 24 hours after login.
             },
             subdivision: {
               type: 'string',
-              description: 'Subdivision ID',
+              description: 'Unit ID (accepted as subdivision for backward compatibility)',
               example: '507f1f77bcf86cd799439013',
             },
             role: {
@@ -1144,16 +1152,6 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Region',
               example: 'Greater Accra',
-            },
-            watchroom: {
-              type: 'string',
-              description: 'Watchroom (required for Operations department)',
-              example: 'Watch Room 1',
-            },
-            crew: {
-              type: 'string',
-              description: 'Crew (required for Operations department)',
-              example: 'Crew 1',
             },
           },
         },
@@ -1178,18 +1176,26 @@ Tokens are valid for 24 hours after login.
           properties: {
             name: {
               type: 'string',
-              description: 'Subdivision name',
+              description: 'Unit name',
               example: 'Watch A',
             },
             color: {
               type: 'string',
-              description: 'Subdivision color',
+              description: 'Unit color',
               example: '#FF0000',
             },
             department: {
               type: 'string',
               description: 'Department ID',
               example: '507f1f77bcf86cd799439011',
+            },
+            groupNames: {
+              type: 'array',
+              description: 'Array of group names (optional)',
+              items: {
+                type: 'string',
+              },
+              example: ['Group 1', 'Group 2'],
             },
           },
         },
@@ -1202,7 +1208,7 @@ Tokens are valid for 24 hours after login.
             },
             message: {
               type: 'string',
-              example: 'Subdivision created successfully',
+              example: 'Unit created successfully',
             },
             data: {
               $ref: '#/components/schemas/Subdivision',
@@ -1221,6 +1227,16 @@ Tokens are valid for 24 hours after login.
               type: 'string',
               description: 'Rank initials',
               example: 'CFO',
+            },
+            level: {
+              type: 'number',
+              description: 'Numeric level for ranking',
+              example: 10,
+            },
+            role: {
+              type: 'string',
+              description: 'Job description or role of the rank',
+              example: 'Fire Chief responsible for overall operations',
             },
           },
         },

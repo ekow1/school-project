@@ -1,4 +1,6 @@
 import FireReport from '../models/FireReport.js';
+import User from '../models/User.js';
+import FirePersonnel from '../models/FirePersonnel.js';
 import mongoose from 'mongoose';
 
 // Create Fire Report
@@ -92,6 +94,29 @@ export const createFireReport = async (req, res) => {
         }
         console.log('✅ UserId validation passed');
 
+        // Determine reporter type - check if userId is a User or FirePersonnel
+        console.log('🔍 Determining reporter type...');
+        let reporterId = userId;
+        let reporterType = null;
+        
+        const user = await User.findById(userId);
+        if (user) {
+            reporterType = 'User';
+            console.log('✅ Reporter identified as: User');
+        } else {
+            const personnel = await FirePersonnel.findById(userId);
+            if (personnel) {
+                reporterType = 'FirePersonnel';
+                console.log('✅ Reporter identified as: FirePersonnel');
+            } else {
+                console.log('❌ Reporter not found in either User or FirePersonnel');
+                return res.status(404).json({
+                    success: false,
+                    message: 'User ID not found. The provided ID does not exist in Users or FirePersonnel'
+                });
+            }
+        }
+
         // Handle station - could be ObjectId or station object
         console.log('🔍 Processing station data...');
         let stationId;
@@ -182,7 +207,8 @@ export const createFireReport = async (req, res) => {
             incidentName,
             location,
             station: stationId,
-            userId,
+            reporterId,
+            reporterType,
             description,
             estimatedCasualties,
             estimatedDamage,
@@ -193,7 +219,8 @@ export const createFireReport = async (req, res) => {
             incidentType: fireReport.incidentType,
             incidentName: fireReport.incidentName,
             station: fireReport.station,
-            userId: fireReport.userId,
+            reporterId: fireReport.reporterId,
+            reporterType: fireReport.reporterType,
             status: fireReport.status,
             priority: fireReport.priority,
             reportedAt: fireReport.reportedAt
@@ -207,7 +234,10 @@ export const createFireReport = async (req, res) => {
         console.log('🔗 Populating related data...');
         await fireReport.populate([
             { path: 'station', select: 'name location lat lng phone_number placeId' },
-            { path: 'userId', select: 'name phone email' }
+            { 
+                path: 'reporterDetails', 
+                select: reporterType === 'User' ? 'name phone email' : 'name rank department unit role station' 
+            }
         ]);
 
         console.log('✅ Fire report created successfully:', {
@@ -217,7 +247,7 @@ export const createFireReport = async (req, res) => {
             status: fireReport.status,
             priority: fireReport.priority,
             stationName: fireReport.station?.name,
-            userName: fireReport.userId?.name,
+            reporterType: fireReport.reporterType,
             reportedAt: fireReport.reportedAt
         });
 
@@ -260,7 +290,7 @@ export const getAllFireReports = async (req, res) => {
     try {
         const fireReports = await FireReport.find({})
             .populate('station', 'name location lat lng phone_number')
-            .populate('userId', 'name phone')
+            .populate('reporterDetails')
             .populate('assignedPersonnel', 'name rank role')
             .sort({ reportedAt: -1 });
 
@@ -295,7 +325,7 @@ export const getFireReportById = async (req, res) => {
 
         const fireReport = await FireReport.findById(id)
             .populate('station', 'name location lat lng phone_number')
-            .populate('userId', 'name phone')
+            .populate('reporterDetails')
             .populate('assignedPersonnel', 'name rank role');
 
         if (!fireReport) {
@@ -346,7 +376,7 @@ export const updateFireReport = async (req, res) => {
             { new: true, runValidators: true }
         ).populate([
             { path: 'station', select: 'name location lat lng phone_number' },
-            { path: 'userId', select: 'name phone' },
+            { path: 'reporterDetails' },
             { path: 'assignedPersonnel', select: 'name rank role' }
         ]);
 
@@ -441,7 +471,7 @@ export const getFireReportsByStation = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const fireReports = await FireReport.find(filter)
-            .populate('userId', 'name phone')
+            .populate('reporterDetails')
             .populate('assignedPersonnel', 'name rank role')
             .sort({ reportedAt: -1 })
             .skip(skip)
@@ -477,11 +507,11 @@ export const getFireReportsByUser = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid user ID format'
+                message: 'Invalid reporter ID format'
             });
         }
 
-        const filter = { userId };
+        const filter = { reporterId: userId };
         if (status) filter.status = status;
 
         const skip = (page - 1) * limit;
